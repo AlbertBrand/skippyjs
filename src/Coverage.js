@@ -115,9 +115,20 @@ function runSpec(specFile) {
       page.evaluate(() => {
         return JSR._resultsCache;
       }, (result) => {
-        console.log();
-        console.log(colors.bgBlue.white(`Spec ${specFile}`));
-        console.log(result);
+        var success = true;
+        for (let string of result) {
+          let it = JSON.parse(string);
+          if(it.status === 'passed') {
+            console.log(colors.green(it.description));
+          } else {
+            console.log(colors.red(it.description));
+            success = false;
+          }
+        }
+        if(success)
+          console.log('Spec ', colors.green(specFile));
+        else
+          console.log('Spec ', colors.red(specFile));
       });
     });
   });
