@@ -9,8 +9,7 @@ import fileReader from './fileReader';
 import Instrumentify from './Intrumentify';
 import { testSrcPath, tmpPath, coveragePath, templatePath, staticPath} from './config';
 import server from './server';
-import Coverage from './Coverage';
-
+import { initCoverage, runTest, closeServer } from './Coverage';
 
 // cleanup & create folders
 if (!fs.existsSync(tmpPath)) {
@@ -31,9 +30,9 @@ let instruFiles = Instrumentify(codeFiles);
 server.serve();
 
 // run phantom
-Coverage(instruFiles, testFiles);
+initCoverage(instruFiles, testFiles);
 
 // file watcher
-//chokidar.watch(testSrcPath).on('all', function (event, path) {
-//  console.log(event, path);
-//});
+chokidar.watch(testSrcPath).on('all', function (event, path) {
+  console.log(event, path);
+});

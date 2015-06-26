@@ -8,58 +8,68 @@ import crypto from 'crypto';
 
 /* CUSTOM MODULES */
 import { testSrcPath, tmpPath, coveragePath, templatePath, staticPath, port} from './config';
-import server from './server';
+//import server from './server';
+
+const NO_TEST = 'no-test.coverage.json';
 
 // prepare html template
 let scriptTemplate = compile('<script src="${src}"></script>', 'utf8');
 let runnerTemplate = compile(fs.readFileSync(templatePath + 'runner.html', 'utf8'));
 
 let coverageOut = {};
+let ph;
 
-const NO_TEST = 'no-test.coverage.json';
+// boot phantom
+let phantomBoot = new Promise((resolve, reject) => {
+  phantom.create((newPhantom) => {
+    ph = newPhantom;
+    resolve();
+  });
+});
 
-export default function (instruFiles, specFiles) {
-  phantom.create((ph) => {
 
-    function doCoverage(srcFiles, dest) {
-      let includes = srcFiles.map((src) => {
-        return resolveToString(scriptTemplate, { src: src });
-      }).join('\n');
-      let out = resolveToString(runnerTemplate, { includes: includes });
-      let hash = crypto.createHash('md5').update(out).digest('hex');
+function doCoverage(srcFiles, dest) {
+  console.log('doCoverage', srcFiles, dest);
 
-      let fileName = 'index-' + hash + '.html';
-      fs.writeFileSync(tmpPath + fileName, out);
+  let includes = srcFiles.map((src) => {
+    return resolveToString(scriptTemplate, { src: src });
+  }).join('\n');
+  let out = resolveToString(runnerTemplate, { includes: includes });
+  let hash = crypto.createHash('md5').update(out).digest('hex');
 
-      return new Promise((resolve, reject) => {
-        ph.createPage((page) => {
-          page.open('http://localhost:' + port + '/' + fileName, () => {
-            page.evaluate(() => {
-              return __coverage__;
-            }, (result) => {
-              storeCoverage(result, dest);
-              resolve();
-            });
-          });
+  let fileName = 'index-' + hash + '.html';
+  fs.writeFileSync(tmpPath + fileName, out);
+
+  return new Promise((resolve, reject) => {
+    ph.createPage((page) => {
+      console.log('created page');
+
+      page.open('http://localhost:' + port + '/' + fileName, () => {
+        page.evaluate(() => {
+          return __coverage__;
+        }, (result) => {
+          storeCoverage(result, dest);
+          resolve();
         });
       });
-    }
+    });
+  });
+}
 
-    // store coverage
-    function storeCoverage(coverage, fileName) {
-      coverageOut[fileName] = coverage;
-      fs.writeFileSync(coveragePath + fileName, JSON.stringify(coverage), 'utf8');
-    }
+// store coverage
+function storeCoverage(coverage, fileName) {
+  coverageOut[fileName] = coverage;
+  fs.writeFileSync(coveragePath + fileName, JSON.stringify(coverage), 'utf8');
+}
 
-    function getCoverageName(file) {
-      return path.parse(file).name + '.coverage.json';
-    }
+function getCoverageName(file) {
+  return path.parse(file).name + '.coverage.json';
+}
 
+export function initCoverage(instruFiles, specFiles) {
+  phantomBoot.then(() => {
     // prepare run of instrumentation
-    let promises = [
-      doCoverage(instruFiles, NO_TEST)
-    ];
-
+    let promises = [doCoverage(instruFiles, NO_TEST)];
     for (let file of specFiles) {
       promises.push(doCoverage([...instruFiles, file], getCoverageName(file)));
     }
@@ -78,7 +88,7 @@ export default function (instruFiles, specFiles) {
           let noTestBranch = noTestCoverage[codeFile].s;
           for (let i in noTestBranch) {
             let diff = specBranch[i] - noTestBranch[i];
-            if(diff != 0) {
+            if (diff != 0) {
               if (!diffResult[codeFile]) {
                 diffResult[codeFile] = [];
               }
@@ -90,11 +100,29 @@ export default function (instruFiles, specFiles) {
       }
 
       console.log(diffResult);
-
-      console.log('Closing phantom & server');
-      ph.exit();
-      server.close();
     });
+  });
+}
 
+export function runTest(specFile) {
+  phantomBoot.then(() => {
+    ph.createPage((page) => {
+      page.open('http://localhost:' + port + '/' + specFile, () => {
+        page.evaluate(() => {
+          return __coverage__;
+        }, (result) => {
+          storeCoverage(result, dest);
+          resolve();
+        });
+      });
+    });
+  });
+}
+
+export function closeServer() {
+  phantomBoot.then(() => {
+    console.log('Closing phantom & server');
+    ph.exit();
+    server.close();
   });
 }
