@@ -10,24 +10,13 @@ import serveStatic from 'serve-static';
 import compile from 'es6-template-strings/compile';
 import resolveToString from 'es6-template-strings/resolve-to-string';
 import fileReader from './fileReader';
+import Instrumentify from './Intrumentify';
+import { testSrcPath, tmpPath, coveragePath, templatePath, staticPath} from './config';
 import crypto from 'crypto';
 import chokidar from 'chokidar';
 
-let {testFiles, codeFiles} = fileReader('testsrc');
-let testSrcPath = 'testsrc/';
-let tmpPath = '.tmp/';
-let coveragePath = tmpPath + 'coverage/';
-let templatePath = 'template/';
-let staticPath = 'static/';
 
-let srcFilePath = testSrcPath + 'file1.js';
-let specFilePath = 'file1.spec.js';
-
-// prepare html template
-let scriptTemplate = compile('<script src="${src}"></script>', 'utf8');
-let runnerTemplate = compile(fs.readFileSync(templatePath + 'runner.html', 'utf8'));
-
-// cleanup
+// cleanup & create folders
 if (!fs.existsSync(tmpPath)) {
   fs.mkdirSync(tmpPath);
 }
@@ -36,16 +25,17 @@ if (fs.existsSync(coveragePath)) {
 }
 fs.mkdirSync(coveragePath);
 
+
+let {testFiles, codeFiles} = fileReader('testsrc');
+
 // run instrumentation
-let code = fs.readFileSync(srcFilePath, 'utf8');
-let instrumenter = new istanbul.Instrumenter();
-let instruFiles = [];
-for (let file of codeFiles) {
-  let instrumentedName = path.parse(file).name + '.instrumented.js';
-  let instrCode = instrumenter.instrumentSync(code, file);
-  fs.writeFileSync(tmpPath + instrumentedName, instrCode);
-  instruFiles.push(instrumentedName);
-}
+let instruFiles = Instrumentify(codeFiles);
+
+
+// prepare html template
+let scriptTemplate = compile('<script src="${src}"></script>', 'utf8');
+let runnerTemplate = compile(fs.readFileSync(templatePath + 'runner.html', 'utf8'));
+
 
 // run webserver
 let port = 4999;
