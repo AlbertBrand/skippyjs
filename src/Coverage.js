@@ -113,6 +113,8 @@ function runSpec(specFile) {
       page.evaluate(() => {
         return JSR._resultsCache;
       }, (result) => {
+        console.log();
+        console.log('Spec ', specFile);
         console.log(result);
       });
     });

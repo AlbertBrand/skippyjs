@@ -8,3 +8,4 @@ var My = {
     return a + b;
   }
 };
+
