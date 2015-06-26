@@ -7,22 +7,23 @@ import finalhandler from 'finalhandler';
 import {tmpPath, staticPath, testSrcPath} from './config';
 
 let httpServer;
+let tmpServe = serveStatic(tmpPath);
+let staticServe = serveStatic(staticPath);
+let testSrcServe = serveStatic(testSrcPath);
 
 export default {
-    serve: function (port) {
-        // run webserver
-        let tmpServe = serveStatic(tmpPath);
-        let staticServe = serveStatic(staticPath);
-        let testSrcServe = serveStatic(testSrcPath);
-        httpServer = http.createServer((req, res) => {
-            tmpServe(req, res, () => {
-                testSrcServe(req, res, () => {
-                    staticServe(req, res, finalhandler(req, res));
-                });
-            });
-        }).listen(port);
-    },
-    close: function() {
-        httpServer.close();
-    }
+  // run webserver
+  serve: function (port) {
+    httpServer = http.createServer((req, res) => {
+      tmpServe(req, res, () => {
+        testSrcServe(req, res, () => {
+          staticServe(req, res, finalhandler(req, res));
+        });
+      });
+    }).listen(port);
+  },
+
+  close: function () {
+    httpServer.close();
+  }
 }

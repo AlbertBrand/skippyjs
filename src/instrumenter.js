@@ -76,7 +76,7 @@ phantom.create((ph) => {
   ];
 
   for (let file of testFiles) {
-    let coverageFileName = path.parse(file).name + '.coverage.json'
+    let coverageFileName = path.parse(file).name + '.coverage.json';
     promises.push(doCoverage([...instruFiles, file], coverageFileName));
   }
 
