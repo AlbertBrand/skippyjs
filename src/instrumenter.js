@@ -1,14 +1,14 @@
 'use strict';
 
-let istanbul = require('istanbul'),
-  fs = require('fs-extra'),
-  path = require('path'),
-  phantom = require('phantom'),
-  http = require('http'),
-  finalhandler = require('finalhandler'),
-  serveStatic = require('serve-static'),
-  compile = require('es6-template-strings/compile'),
-  resolveToString = require('es6-template-strings/resolve-to-string');
+import istanbul from 'istanbul';
+import fs from 'fs-extra';
+import path from 'path';
+import phantom from 'phantom';
+import http from 'http';
+import finalhandler from 'finalhandler';
+import serveStatic from 'serve-static';
+import compile from 'es6-template-strings/compile';
+import resolveToString from 'es6-template-strings/resolve-to-string';
 
 let testSrcPath = 'testsrc/';
 let tmpPath = '.tmp/';
