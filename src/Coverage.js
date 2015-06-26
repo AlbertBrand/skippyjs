@@ -10,7 +10,7 @@ import crypto from 'crypto';
 import { testSrcPath, tmpPath, coveragePath, templatePath, staticPath, port} from './config';
 //import server from './server';
 
-const NO_TEST = 'no-test.coverage.json';
+const NO_TEST = 'no-test';
 
 // prepare html template
 let scriptTemplate = compile('<script src="${src}"></script>', 'utf8');
@@ -29,27 +29,25 @@ let phantomBoot = new Promise((resolve, reject) => {
 });
 
 
-function doCoverage(srcFiles, dest) {
-  console.log('doCoverage', srcFiles, dest);
+function doCoverage(codeFiles, specFile) {
+  console.log('doCoverage', codeFiles, specFile);
 
-  let includes = srcFiles.map((src) => {
+  let includes = [...codeFiles, specFile].map((src) => {
     return resolveToString(scriptTemplate, { src: src });
   }).join('\n');
   let out = resolveToString(runnerTemplate, { includes: includes });
-  let hash = crypto.createHash('md5').update(out).digest('hex');
+  let hash = crypto.createHash('md5').update(specFile).digest('hex');
 
-  let fileName = 'index-' + hash + '.html';
-  fs.writeFileSync(tmpPath + fileName, out);
+  let indexFileName = 'index-' + hash + '.html';
+  fs.writeFileSync(tmpPath + indexFileName, out);
 
   return new Promise((resolve, reject) => {
     ph.createPage((page) => {
-      console.log('created page');
-
-      page.open('http://localhost:' + port + '/' + fileName, () => {
+      page.open('http://localhost:' + port + '/' + indexFileName, () => {
         page.evaluate(() => {
           return __coverage__;
         }, (result) => {
-          storeCoverage(result, dest);
+          storeCoverage(result, specFile);
           resolve();
         });
       });
@@ -59,8 +57,8 @@ function doCoverage(srcFiles, dest) {
 
 // store coverage
 function storeCoverage(coverage, fileName) {
-  coverageOut[fileName] = coverage;
-  fs.writeFileSync(coveragePath + fileName, JSON.stringify(coverage), 'utf8');
+  coverageOut[getCoverageName(fileName)] = coverage;
+  fs.writeFileSync(coveragePath + getCoverageName(fileName), JSON.stringify(coverage), 'utf8');
 }
 
 function getCoverageName(file) {
@@ -72,14 +70,14 @@ export function initCoverage(instruFiles, specFiles) {
     // prepare run of instrumentation
     let promises = [doCoverage(instruFiles, NO_TEST)];
     for (let file of specFiles) {
-      promises.push(doCoverage([...instruFiles, file], getCoverageName(file)));
+      promises.push(doCoverage(instruFiles, file));
     }
 
     // run instrumentation for all specs
     Promise.all(promises).then(() => {
       console.log('Diffing');
 
-      let noTestCoverage = coverageOut[NO_TEST];
+      let noTestCoverage = coverageOut[getCoverageName(NO_TEST)];
 
       for (let specFile of specFiles) {
         let specCoverage = coverageOut[getCoverageName(specFile)];
@@ -110,19 +108,18 @@ export function runTest(file) {
       console.log('code file, running specs: ', diffResult[file]);
     } else {
       console.log('spec file, running only this: ', file);
-    }
+      let hash = crypto.createHash('md5').update(file).digest('hex');
 
-    let specFile = 'index-ea0be7dc62658a284db0dfffc5ed856b.html';
-
-    ph.createPage((page) => {
-      page.open('http://localhost:' + port + '/' + specFile, () => {
-        page.evaluate(() => {
-          return JSR._resultsCache;
-        }, (result) => {
-          console.log(result);
+      ph.createPage((page) => {
+        page.open('http://localhost:' + port + '/' + specFile, () => {
+          page.evaluate(() => {
+            return JSR._resultsCache;
+          }, (result) => {
+            console.log(result);
+          });
         });
       });
-    });
+    }
   });
 }
 
