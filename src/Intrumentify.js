@@ -1,10 +1,12 @@
-import { testSrcPath, tmpPath, coveragePath, templatePath, staticPath} from './config';
+/* LIBRARIES */
 import istanbul from 'istanbul';
 import path from 'path';
 import fs from 'fs';
 
-export default function (files) {
+/* CUSTOM MODULES */
+import { testSrcPath, tmpPath, coveragePath, templatePath, staticPath} from './config';
 
+export default function (files) {
     let instrumenter = new istanbul.Instrumenter();
     let instruFiles = [];
     for(let file of files) {

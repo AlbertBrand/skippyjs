@@ -1,20 +1,19 @@
 'use strict';
 
-import istanbul from 'istanbul';
+/* LIBRARIES */
 import fs from 'fs-extra';
 import path from 'path';
 import phantom from 'phantom';
-import http from 'http';
-import finalhandler from 'finalhandler';
-import serveStatic from 'serve-static';
 import compile from 'es6-template-strings/compile';
 import resolveToString from 'es6-template-strings/resolve-to-string';
-import fileReader from './fileReader';
-import Instrumentify from './Intrumentify';
-import { testSrcPath, tmpPath, coveragePath, templatePath, staticPath} from './config';
 import crypto from 'crypto';
 import chokidar from 'chokidar';
 
+/* CUSTOM MODULES */
+import fileReader from './fileReader';
+import Instrumentify from './Intrumentify';
+import { testSrcPath, tmpPath, coveragePath, templatePath, staticPath} from './config';
+import server from './server';
 
 // cleanup & create folders
 if (!fs.existsSync(tmpPath)) {
@@ -36,19 +35,8 @@ let instruFiles = Instrumentify(codeFiles);
 let scriptTemplate = compile('<script src="${src}"></script>', 'utf8');
 let runnerTemplate = compile(fs.readFileSync(templatePath + 'runner.html', 'utf8'));
 
-
-// run webserver
-let port = 4999;
-let tmpServe = serveStatic(tmpPath);
-let staticServe = serveStatic(staticPath);
-let testSrcServe = serveStatic(testSrcPath);
-let server = http.createServer((req, res) => {
-  tmpServe(req, res, () => {
-    testSrcServe(req, res, () => {
-      staticServe(req, res, finalhandler(req, res));
-    });
-  });
-}).listen(port);
+let port = 3000;
+server.serve(port);
 
 // run phantom
 phantom.create((ph) => {
