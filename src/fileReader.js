@@ -4,21 +4,19 @@ import fs from 'fs-extra';
 export default function fileReader(folder, tests, code) {
   if (!tests) tests = [];
   if (!code) code = [];
-  var files = fs.readdirSync(folder),
-    i,
-    n,
-    fileName;
+  let files = fs.readdirSync(folder);
 
-  for (i = 0, n = files.length; i < n; i += 1) {
-    fileName = folder + '/' + files[i];
-    if (fs.lstatSync(fileName).isDirectory()) {
-      fileReader(fileName, tests, code);
+  for (let file of files) {
+    let filePath = folder + '/' + file;
+    if (fs.lstatSync(filePath).isDirectory()) {
+      fileReader(filePath, tests, code);
     }
-    if (fileName.match(/\.spec\.js/)) {
-      tests.push(fileName);
-    } else if (fileName.match(/\.js/)) {
-      code.push(fileName);
+    if (filePath.match(/\.spec\.js/)) {
+      tests.push(filePath);
+    } else if (filePath.match(/\.js/)) {
+      code.push(filePath);
     }
   }
+
   return { testFiles: tests, codeFiles: code };
 }

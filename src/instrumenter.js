@@ -24,12 +24,11 @@ if (fs.existsSync(coveragePath)) {
 }
 fs.mkdirSync(coveragePath);
 
-
+// find spec & code files
 let {testFiles, codeFiles} = fileReader('testsrc');
 
 // run instrumentation
 let instruFiles = Instrumentify(codeFiles);
-
 
 // prepare html template
 let scriptTemplate = compile('<script src="${src}"></script>', 'utf8');

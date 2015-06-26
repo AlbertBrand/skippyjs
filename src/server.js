@@ -9,15 +9,15 @@ import {tmpPath, staticPath, testSrcPath} from './config';
 let httpServer;
 let tmpServe = serveStatic(tmpPath);
 let staticServe = serveStatic(staticPath);
-let testSrcServe = serveStatic(testSrcPath);
+let rootServe = serveStatic('.');
 
 export default {
   // run webserver
   serve: function (port) {
     httpServer = http.createServer((req, res) => {
       tmpServe(req, res, () => {
-        testSrcServe(req, res, () => {
-          staticServe(req, res, finalhandler(req, res));
+        staticServe(req, res, () => {
+          rootServe(req, res, finalhandler(req, res));
         });
       });
     }).listen(port);
