@@ -71,6 +71,8 @@ function getCoverageName(file) {
 
 export function initCoverage(instruFiles, specFiles) {
   phantomBoot.then(() => {
+    console.log(colors.bgMagenta.white('SkippyJS booted!'));
+
     // prepare run of instrumentation
     let promises = [doCoverage(instruFiles, NO_TEST)];
     for (let file of specFiles) {
@@ -114,7 +116,7 @@ function runSpec(specFile) {
         return JSR._resultsCache;
       }, (result) => {
         console.log();
-        console.log('Spec ', colors.blue(specFile));
+        console.log(colors.bgBlue.white(`Spec ${specFile}`));
         console.log(result);
       });
     });

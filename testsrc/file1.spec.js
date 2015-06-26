@@ -11,4 +11,3 @@ describe("sqrt", function () {
     expect(My.sum(1, 2)).toBe(3);
   });
 });
-
