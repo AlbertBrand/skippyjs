@@ -9,7 +9,11 @@ import finalhandler from 'finalhandler';
 import serveStatic from 'serve-static';
 import compile from 'es6-template-strings/compile';
 import resolveToString from 'es6-template-strings/resolve-to-string';
+import fileReader from './fileReader';
 
+let {testFiles, codeFiles} = fileReader('testsrc');
+
+console.log(testFiles, codeFiles );
 let testSrcPath = 'testsrc/';
 let tmpPath = '.tmp/';
 let coveragePath = tmpPath + 'coverage/';

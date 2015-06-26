@@ -1,4 +1,8 @@
-function readFiles(folder, tests, code) {
+import fs from 'fs-extra';
+
+export default function fileReader (folder, tests, code) {
+    if(!tests) tests = [];
+    if(!code) code = [];
     var files = fs.readdirSync(folder),
         i,
         n,
@@ -7,7 +11,7 @@ function readFiles(folder, tests, code) {
     for(i = 0, n = files.length; i < n; i += 1) {
         fileName = folder + '/' + files[i];
         if(fs.lstatSync(fileName).isDirectory()) {
-            readFiles(fileName, tests, code);
+            fileReader(fileName, tests, code);
         }
         if(fileName.match(/\.spec\.js/)) {
             tests.push(fileName);
@@ -15,8 +19,5 @@ function readFiles(folder, tests, code) {
             code.push(fileName);
         }
     }
-    return {tests: tests, code: code};
+    return {testFiles: tests, codeFiles: code};
 }
-console.log(readFiles('./testsrc', [], []));
-
-export readFiles;
