@@ -5,7 +5,7 @@ import phantom from 'phantom';
 import compile from 'es6-template-strings/compile';
 import resolveToString from 'es6-template-strings/resolve-to-string';
 import crypto from 'crypto';
-
+import colors from 'colors/safe';
 /* CUSTOM MODULES */
 import { testSrcPath, tmpPath, coveragePath, templatePath, staticPath, port} from './config';
 //import server from './server';
@@ -114,7 +114,7 @@ function runSpec(specFile) {
         return JSR._resultsCache;
       }, (result) => {
         console.log();
-        console.log('Spec ', specFile);
+        console.log('Spec ', colors.blue(specFile));
         console.log(result);
       });
     });
