@@ -10,10 +10,9 @@ import serveStatic from 'serve-static';
 import compile from 'es6-template-strings/compile';
 import resolveToString from 'es6-template-strings/resolve-to-string';
 import fileReader from './fileReader';
-
+import crypto from 'crypto';
 let {testFiles, codeFiles} = fileReader('testsrc');
 
-console.log(testFiles, codeFiles );
 let testSrcPath = 'testsrc/';
 let tmpPath = '.tmp/';
 let coveragePath = tmpPath + 'coverage/';
@@ -39,9 +38,13 @@ fs.mkdirSync(coveragePath);
 // run instrumentation
 let code = fs.readFileSync(srcFilePath, 'utf8');
 let instrumenter = new istanbul.Instrumenter();
-let instrCode = instrumenter.instrumentSync(code, srcFilePath);
-fs.writeFileSync(tmpPath + 'file1.instrumented.js', instrCode);
-
+let instruFiles = [];
+for(let file of codeFiles) {
+  let instrumentedName = path.parse(file).name + '.instrumented.js';
+  let instrCode = instrumenter.instrumentSync(code, file);
+  fs.writeFileSync(tmpPath + instrumentedName, instrCode);
+  instruFiles.push(instrumentedName);
+}
 // run webserver
 let port = 4999;
 let tmpServe = serveStatic(tmpPath);
@@ -63,11 +66,14 @@ phantom.create((ph) => {
       return resolveToString(scriptTemplate, { src: src });
     }).join('\n');
     let out = resolveToString(runnerTemplate, { includes: includes });
-    fs.writeFileSync(tmpPath + 'index.html', out);
+    var hash = crypto.createHash('md5').update(out).digest('hex');
+
+    let fileName = 'index-' + hash + '.html';
+    fs.writeFileSync(tmpPath + fileName, out);
 
     return new Promise((resolve, reject) => {
       ph.createPage((page) => {
-        page.open('http://localhost:' + port + '/index.html', () => {
+        page.open('http://localhost:' + port + '/' + fileName, () => {
           page.evaluate(function () {
             return __coverage__;
           }, (result) => {
@@ -83,17 +89,21 @@ phantom.create((ph) => {
   function storeCoverage(coverage, fileName) {
     fs.writeFileSync(coveragePath + fileName, JSON.stringify(coverage), 'utf8');
   }
+  let promises = [];
+  promises.push(doCoverage(instruFiles, 'no-test.coverage.json'))
 
-  // run once without spec
-  doCoverage(['file1.instrumented.js'], 'no-test.coverage.json')
-    .then(() => {
-      // run for each spec
-      doCoverage(['file1.instrumented.js', specFilePath], 'file1.spec.coverage.json')
-        .then(() => {
-          console.log('Closing phantom & server');
-          ph.exit();
-          server.close();
-        });
-    })
+  for(let file of testFiles) {
+    let coverageFileName = path.parse(file).name + '.coverage.json'
+    promises.push(doCoverage([...instruFiles, file], coverageFileName));
+
+
+  }
+
+  Promise.all(promises).then(() => {
+
+    console.log('Closing phantom & server');
+    ph.exit();
+    server.close();
+  });
 
 });
