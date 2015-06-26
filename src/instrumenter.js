@@ -1,4 +1,6 @@
-var istanbul = require('istanbul'),
+'use strict';
+
+let istanbul = require('istanbul'),
   fs = require('fs-extra'),
   path = require('path'),
   phantom = require('phantom'),
@@ -8,18 +10,18 @@ var istanbul = require('istanbul'),
   compile = require('es6-template-strings/compile'),
   resolveToString = require('es6-template-strings/resolve-to-string');
 
-var testSrcPath = 'testsrc/';
-var tmpPath = '.tmp/';
-var coveragePath = tmpPath + 'coverage/';
-var templatePath = 'template/';
-var staticPath = 'static/';
+let testSrcPath = 'testsrc/';
+let tmpPath = '.tmp/';
+let coveragePath = tmpPath + 'coverage/';
+let templatePath = 'template/';
+let staticPath = 'static/';
 
-var srcFilePath = testSrcPath + 'file1.js';
-var specFilePath = 'file1.spec.js';
+let srcFilePath = testSrcPath + 'file1.js';
+let specFilePath = 'file1.spec.js';
 
 // prepare html template
-var scriptTemplate = compile('<script src="${src}"></script>', 'utf8');
-var runnerTemplate = compile(fs.readFileSync(templatePath + 'runner.html', 'utf8'));
+let scriptTemplate = compile('<script src="${src}"></script>', 'utf8');
+let runnerTemplate = compile(fs.readFileSync(templatePath + 'runner.html', 'utf8'));
 
 // cleanup
 if (!fs.existsSync(tmpPath)) {
@@ -31,40 +33,40 @@ if (fs.existsSync(coveragePath)) {
 fs.mkdirSync(coveragePath);
 
 // run instrumentation
-var code = fs.readFileSync(srcFilePath, 'utf8');
-var instrumenter = new istanbul.Instrumenter();
-var instrCode = instrumenter.instrumentSync(code, srcFilePath);
+let code = fs.readFileSync(srcFilePath, 'utf8');
+let instrumenter = new istanbul.Instrumenter();
+let instrCode = instrumenter.instrumentSync(code, srcFilePath);
 fs.writeFileSync(tmpPath + 'file1.instrumented.js', instrCode);
 
 // run webserver
-var port = 4999;
-var tmpServe = serveStatic(tmpPath);
-var staticServe = serveStatic(staticPath);
-var testSrcServe = serveStatic(testSrcPath);
-var server = http.createServer(function (req, res) {
-  tmpServe(req, res, function() {
-    testSrcServe(req, res, function() {
+let port = 4999;
+let tmpServe = serveStatic(tmpPath);
+let staticServe = serveStatic(staticPath);
+let testSrcServe = serveStatic(testSrcPath);
+let server = http.createServer((req, res) => {
+  tmpServe(req, res, () => {
+    testSrcServe(req, res, () => {
       staticServe(req, res, finalhandler(req, res));
     });
   });
 }).listen(port);
 
 // run phantom
-phantom.create(function (ph) {
+phantom.create((ph) => {
 
   function doCoverage(srcFiles, dest) {
-    var includes = srcFiles.map(function (src) {
+    let includes = srcFiles.map((src) => {
       return resolveToString(scriptTemplate, { src: src });
     }).join('\n');
-    var out = resolveToString(runnerTemplate, { includes: includes });
+    let out = resolveToString(runnerTemplate, { includes: includes });
     fs.writeFileSync(tmpPath + 'index.html', out);
 
-    return new Promise(function (resolve, reject) {
-      ph.createPage(function (page) {
-        page.open('http://localhost:' + port + '/index.html', function () {
+    return new Promise((resolve, reject) => {
+      ph.createPage((page) => {
+        page.open('http://localhost:' + port + '/index.html', () => {
           page.evaluate(function () {
             return __coverage__;
-          }, function (result) {
+          }, (result) => {
             storeCoverage(result, dest);
             resolve();
           });
@@ -80,10 +82,10 @@ phantom.create(function (ph) {
 
   // run once without spec
   doCoverage(['file1.instrumented.js'], 'no-test.coverage.json')
-    .then(function () {
+    .then(() => {
       // run for each spec
       doCoverage(['file1.instrumented.js', specFilePath], 'file1.spec.coverage.json')
-        .then(function () {
+        .then(() => {
           console.log('Closing phantom & server');
           ph.exit();
           server.close();
