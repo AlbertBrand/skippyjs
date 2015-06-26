@@ -11,8 +11,9 @@ import compile from 'es6-template-strings/compile';
 import resolveToString from 'es6-template-strings/resolve-to-string';
 import fileReader from './fileReader';
 import crypto from 'crypto';
-let {testFiles, codeFiles} = fileReader('testsrc');
+import chokidar from 'chokidar';
 
+let {testFiles, codeFiles} = fileReader('testsrc');
 let testSrcPath = 'testsrc/';
 let tmpPath = '.tmp/';
 let coveragePath = tmpPath + 'coverage/';
@@ -39,12 +40,13 @@ fs.mkdirSync(coveragePath);
 let code = fs.readFileSync(srcFilePath, 'utf8');
 let instrumenter = new istanbul.Instrumenter();
 let instruFiles = [];
-for(let file of codeFiles) {
+for (let file of codeFiles) {
   let instrumentedName = path.parse(file).name + '.instrumented.js';
   let instrCode = instrumenter.instrumentSync(code, file);
   fs.writeFileSync(tmpPath + instrumentedName, instrCode);
   instruFiles.push(instrumentedName);
 }
+
 // run webserver
 let port = 4999;
 let tmpServe = serveStatic(tmpPath);
@@ -74,7 +76,7 @@ phantom.create((ph) => {
     return new Promise((resolve, reject) => {
       ph.createPage((page) => {
         page.open('http://localhost:' + port + '/' + fileName, () => {
-          page.evaluate(function () {
+          page.evaluate(() => {
             return __coverage__;
           }, (result) => {
             storeCoverage(result, dest);
@@ -89,21 +91,27 @@ phantom.create((ph) => {
   function storeCoverage(coverage, fileName) {
     fs.writeFileSync(coveragePath + fileName, JSON.stringify(coverage), 'utf8');
   }
-  let promises = [];
-  promises.push(doCoverage(instruFiles, 'no-test.coverage.json'))
 
-  for(let file of testFiles) {
+  // prepare run of instrumentation
+  let promises = [
+    doCoverage(instruFiles, 'no-test.coverage.json')
+  ];
+
+  for (let file of testFiles) {
     let coverageFileName = path.parse(file).name + '.coverage.json'
     promises.push(doCoverage([...instruFiles, file], coverageFileName));
-
-
   }
 
+  // run instrumentation for all specs
   Promise.all(promises).then(() => {
-
     console.log('Closing phantom & server');
     ph.exit();
     server.close();
   });
 
 });
+
+// file watcher
+//chokidar.watch(testSrcPath).on('all', function (event, path) {
+//  console.log(event, path);
+//});
