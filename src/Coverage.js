@@ -29,6 +29,11 @@ let phantomBoot = new Promise((resolve, reject) => {
 });
 
 
+function getIndexFile(specFile) {
+  let hash = crypto.createHash('md5').update(specFile).digest('hex');
+  return 'index-' + hash + '.html';
+}
+
 function doCoverage(codeFiles, specFile) {
   console.log('doCoverage', codeFiles, specFile);
 
@@ -36,14 +41,13 @@ function doCoverage(codeFiles, specFile) {
     return resolveToString(scriptTemplate, { src: src });
   }).join('\n');
   let out = resolveToString(runnerTemplate, { includes: includes });
-  let hash = crypto.createHash('md5').update(specFile).digest('hex');
 
-  let indexFileName = 'index-' + hash + '.html';
-  fs.writeFileSync(tmpPath + indexFileName, out);
+  let indexFile = getIndexFile(specFile);
+  fs.writeFileSync(tmpPath + indexFile, out);
 
   return new Promise((resolve, reject) => {
     ph.createPage((page) => {
-      page.open('http://localhost:' + port + '/' + indexFileName, () => {
+      page.open('http://localhost:' + port + '/' + indexFile, () => {
         page.evaluate(() => {
           return __coverage__;
         }, (result) => {
@@ -102,23 +106,29 @@ export function initCoverage(instruFiles, specFiles) {
   });
 }
 
+function runSpec(specFile) {
+  let indexFile = getIndexFile(specFile);
+  ph.createPage((page) => {
+    page.open('http://localhost:' + port + '/' + indexFile, () => {
+      page.evaluate(() => {
+        return JSR._resultsCache;
+      }, (result) => {
+        console.log(result);
+      });
+    });
+  });
+}
+
 export function runTest(file) {
   phantomBoot.then(() => {
     if (diffResult[file]) {
       console.log('code file, running specs: ', diffResult[file]);
+      for(let specFile of diffResult[file]) {
+        runSpec(specFile);
+      }
     } else {
       console.log('spec file, running only this: ', file);
-      let hash = crypto.createHash('md5').update(file).digest('hex');
-
-      ph.createPage((page) => {
-        page.open('http://localhost:' + port + '/' + specFile, () => {
-          page.evaluate(() => {
-            return JSR._resultsCache;
-          }, (result) => {
-            console.log(result);
-          });
-        });
-      });
+      runSpec(file);
     }
   });
 }
