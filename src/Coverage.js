@@ -14,7 +14,11 @@ import server from './server';
 let scriptTemplate = compile('<script src="${src}"></script>', 'utf8');
 let runnerTemplate = compile(fs.readFileSync(templatePath + 'runner.html', 'utf8'));
 
-export default function (instruFiles, testFiles) {
+let coverageOut = {};
+
+const NO_TEST = 'no-test.coverage.json';
+
+export default function (instruFiles, specFiles) {
   phantom.create((ph) => {
 
     function doCoverage(srcFiles, dest) {
@@ -43,21 +47,50 @@ export default function (instruFiles, testFiles) {
 
     // store coverage
     function storeCoverage(coverage, fileName) {
+      coverageOut[fileName] = coverage;
       fs.writeFileSync(coveragePath + fileName, JSON.stringify(coverage), 'utf8');
+    }
+
+    function getCoverageName(file) {
+      return path.parse(file).name + '.coverage.json';
     }
 
     // prepare run of instrumentation
     let promises = [
-      doCoverage(instruFiles, 'no-test.coverage.json')
+      doCoverage(instruFiles, NO_TEST)
     ];
 
-    for (let file of testFiles) {
-      let coverageFileName = path.parse(file).name + '.coverage.json';
-      promises.push(doCoverage([...instruFiles, file], coverageFileName));
+    for (let file of specFiles) {
+      promises.push(doCoverage([...instruFiles, file], getCoverageName(file)));
     }
 
     // run instrumentation for all specs
     Promise.all(promises).then(() => {
+      console.log('Diffing');
+
+      let diffResult = {};
+      let noTestCoverage = coverageOut[NO_TEST];
+
+      for (let specFile of specFiles) {
+        let specCoverage = coverageOut[getCoverageName(specFile)];
+        for (let codeFile in noTestCoverage) {
+          let specBranch = specCoverage[codeFile].s;
+          let noTestBranch = noTestCoverage[codeFile].s;
+          for (let i in noTestBranch) {
+            let diff = specBranch[i] - noTestBranch[i];
+            if(diff != 0) {
+              if (!diffResult[codeFile]) {
+                diffResult[codeFile] = [];
+              }
+              diffResult[codeFile].push(specFile);
+              break;
+            }
+          }
+        }
+      }
+
+      console.log(diffResult);
+
       console.log('Closing phantom & server');
       ph.exit();
       server.close();
