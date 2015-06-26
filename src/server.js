@@ -4,7 +4,7 @@ import serveStatic from 'serve-static';
 import finalhandler from 'finalhandler';
 
 /* CUSTOM MODULES */
-import {tmpPath, staticPath, testSrcPath} from './config';
+import {tmpPath, staticPath, testSrcPath, port} from './config';
 
 let httpServer;
 let tmpServe = serveStatic(tmpPath);
@@ -13,7 +13,7 @@ let testSrcServe = serveStatic(testSrcPath);
 
 export default {
   // run webserver
-  serve: function (port) {
+  serve: function () {
     httpServer = http.createServer((req, res) => {
       tmpServe(req, res, () => {
         testSrcServe(req, res, () => {
