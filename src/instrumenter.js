@@ -14,8 +14,8 @@ var coveragePath = tmpPath + 'coverage/';
 var templatePath = 'template/';
 var staticPath = 'static/';
 
-var srcFilePath = testSrcPath + 'file1.js';
-var specFilePath = 'file1.spec.js';
+var srcFilePath = testSrcPath + 'file2.js';
+var specFilePath = 'file2.spec.js';
 
 // prepare html template
 var scriptTemplate = compile('<script src="${src}"></script>', 'utf8');

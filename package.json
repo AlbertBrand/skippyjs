@@ -11,6 +11,7 @@
     "istanbul": "^0.3.14",
     "jasmine-core": "^2.3.4",
     "phantom": "^0.7.2",
+    "phantomjs": "^1.9.17",
     "serve-static": "^1.9.3"
   }
 }
