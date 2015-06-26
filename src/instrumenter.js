@@ -21,7 +21,7 @@ if (fs.existsSync(coveragePath)) {
 }
 fs.mkdirSync(coveragePath);
 
-//read files
+// find spec & code files
 let {testFiles, codeFiles} = fileReader('testsrc');
 
 // run instrumentation
