@@ -33,6 +33,7 @@ server.serve();
 initCoverage(instruFiles, testFiles);
 
 // file watcher
-chokidar.watch(testSrcPath).on('all', function (event, path) {
-  console.log(event, path);
+chokidar.watch(testSrcPath).on('change', function (path) {
+  console.log('changed file: ', path);
+  runTest(path);
 });

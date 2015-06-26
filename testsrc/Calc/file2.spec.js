@@ -4,7 +4,9 @@ describe("sqrt", function () {
   });
 
   it("should throw error when dividing by zero", function () {
-    expect(Calc.divide(10, 0)).toThrow();
+    expect(function() {
+      Calc.divide(10, 0);
+    }).toThrow();
   });
 
   it("should divide a by b", function () {

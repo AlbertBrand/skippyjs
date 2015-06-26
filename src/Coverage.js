@@ -17,6 +17,7 @@ let scriptTemplate = compile('<script src="${src}"></script>', 'utf8');
 let runnerTemplate = compile(fs.readFileSync(templatePath + 'runner.html', 'utf8'));
 
 let coverageOut = {};
+let diffResult = {};
 let ph;
 
 // boot phantom
@@ -78,7 +79,6 @@ export function initCoverage(instruFiles, specFiles) {
     Promise.all(promises).then(() => {
       console.log('Diffing');
 
-      let diffResult = {};
       let noTestCoverage = coverageOut[NO_TEST];
 
       for (let specFile of specFiles) {
@@ -104,15 +104,22 @@ export function initCoverage(instruFiles, specFiles) {
   });
 }
 
-export function runTest(specFile) {
+export function runTest(file) {
   phantomBoot.then(() => {
+    if (diffResult[file]) {
+      console.log('code file, running specs: ', diffResult[file]);
+    } else {
+      console.log('spec file, running only this: ', file);
+    }
+
+    let specFile = 'index-ea0be7dc62658a284db0dfffc5ed856b.html';
+
     ph.createPage((page) => {
       page.open('http://localhost:' + port + '/' + specFile, () => {
         page.evaluate(() => {
-          return __coverage__;
+          return JSR._resultsCache;
         }, (result) => {
-          storeCoverage(result, dest);
-          resolve();
+          console.log(result);
         });
       });
     });
