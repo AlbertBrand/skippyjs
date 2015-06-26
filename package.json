@@ -5,6 +5,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "babel": "^5.6.11",
     "es6-template-strings": "^1.0.0",
     "finalhandler": "^0.3.6",
     "fs-extra": "^0.18.3",
