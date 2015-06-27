@@ -6,9 +6,10 @@ import compile from 'es6-template-strings/compile';
 import resolveToString from 'es6-template-strings/resolve-to-string';
 import crypto from 'crypto';
 import colors from 'colors/safe';
+
 /* CUSTOM MODULES */
 import { testSrcPath, tmpPath, coveragePath, templatePath, staticPath, port} from './config';
-//import server from './server';
+import server from './httpServer';
 
 const NO_TEST = 'no-test';
 
@@ -69,7 +70,7 @@ function getCoverageName(file) {
   return path.parse(file).name + '.coverage.json';
 }
 
-export function initCoverage(instruFiles, specFiles) {
+function initCoverage(instruFiles, specFiles) {
   phantomBoot.then(() => {
     console.log(colors.bgMagenta.white('SkippyJS booted!'));
 
@@ -134,7 +135,7 @@ function runSpec(specFile) {
   });
 }
 
-export function runTest(file) {
+function runTest(file) {
   phantomBoot.then(() => {
     if (diffResult[file]) {
       console.log('code file, running specs: ', diffResult[file]);
@@ -148,10 +149,12 @@ export function runTest(file) {
   });
 }
 
-export function closeServer() {
+function closeServer() {
   phantomBoot.then(() => {
     console.log('Closing phantom & server');
     ph.exit();
     server.close();
   });
 }
+
+export default { initCoverage, runTest, closeServer };

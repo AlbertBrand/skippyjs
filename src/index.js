@@ -1,2 +1,3 @@
+// ES6 bootstrap
 require('babel/register');
-module.exports = require('./instrumenter');
+module.exports = require('./main');
