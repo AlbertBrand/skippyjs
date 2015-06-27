@@ -25,38 +25,11 @@ let phantomBoot = new Promise((resolve, reject) => {
   });
 });
 
-
-function getIndexFile(specFile) {
-  let hash = crypto.createHash('md5').update(specFile).digest('hex');
+function getIndexFile(testFile) {
+  let hash = crypto.createHash('md5').update(testFile).digest('hex');
   return 'index-' + hash + '.html';
 }
 
-function doCoverage(codeFiles, specFile) {
-  console.log('doCoverage', codeFiles, specFile);
-
-  let includes = [...codeFiles, specFile].map((src) => {
-    return resolveToString(SCRIPT_TEMPLATE, { src: src });
-  }).join('\n');
-  let out = resolveToString(RUNNER_TEMPLATE, { includes: includes });
-
-  let indexFile = getIndexFile(specFile);
-  fs.writeFileSync(config.tmpPath + indexFile, out);
-
-  return new Promise((resolve, reject) => {
-    ph.createPage((page) => {
-      page.open('http://localhost:' + config.httpServerPort + '/' + indexFile, () => {
-        page.evaluate(() => {
-          return __coverage__;
-        }, (result) => {
-          storeCoverage(result, specFile);
-          resolve();
-        });
-      });
-    });
-  });
-}
-
-// store coverage
 function storeCoverage(coverage, fileName) {
   coverageOut[getCoverageName(fileName)] = coverage;
   fs.writeFileSync(config.coveragePath + getCoverageName(fileName), JSON.stringify(coverage), 'utf8');
@@ -66,45 +39,68 @@ function getCoverageName(file) {
   return path.parse(file).name + '.coverage.json';
 }
 
-function initCoverage(instruFiles, specFiles) {
+function doCoverage(srcFiles, testFile) {
+  console.log('Get coverage for', testFile);
+
+  let includes = [...srcFiles, testFile].map((src) => {
+    return resolveToString(SCRIPT_TEMPLATE, { src: src });
+  }).join('\n');
+  let out = resolveToString(RUNNER_TEMPLATE, { includes: includes });
+
+  let indexFile = getIndexFile(testFile);
+  fs.writeFileSync(config.generatedPath + indexFile, out);
+
+  return new Promise((resolve) => {
+    ph.createPage((page) => {
+      page.open('http://localhost:' + config.httpServerPort + '/' + indexFile, () => {
+        page.evaluate(() => {
+          return __coverage__;
+        }, (result) => {
+          storeCoverage(result, testFile);
+          resolve();
+        });
+      });
+    });
+  });
+}
+
+function initCoverage(srcFiles, testFiles) {
   phantomBoot.then(() => {
-    // prepare run of instrumentation
-    let promises = [doCoverage(instruFiles, NO_TEST)];
-    for (let file of specFiles) {
-      promises.push(doCoverage(instruFiles, file));
+    let promises = [doCoverage(srcFiles, NO_TEST)];
+    for (let file of testFiles) {
+      promises.push(doCoverage(srcFiles, file));
     }
 
-    // run instrumentation for all specs
     Promise.all(promises).then(() => {
-      console.log('Diffing');
+      console.log('Diffing coverage reports...');
 
       let noTestCoverage = coverageOut[getCoverageName(NO_TEST)];
 
-      for (let specFile of specFiles) {
-        let specCoverage = coverageOut[getCoverageName(specFile)];
-        for (let codeFile in noTestCoverage) {
-          let specBranch = specCoverage[codeFile].s;
-          let noTestBranch = noTestCoverage[codeFile].s;
-          for (let i in noTestBranch) {
-            let diff = specBranch[i] - noTestBranch[i];
-            if (diff != 0) {
-              if (!diffResult[codeFile]) {
-                diffResult[codeFile] = [];
+      for (let testFile of testFiles) {
+        let testCoverage = coverageOut[getCoverageName(testFile)];
+        for (let srcFile in noTestCoverage) {
+          let testBranchCov = testCoverage[srcFile].s;
+          let noTestBranchCov = noTestCoverage[srcFile].s;
+          for (let i in noTestBranchCov) {
+            if (testBranchCov[i] != noTestBranchCov[i]) {
+              if (!diffResult[srcFile]) {
+                diffResult[srcFile] = [];
               }
-              diffResult[codeFile].push(specFile);
+              diffResult[srcFile].push(testFile);
               break;
             }
           }
         }
       }
 
+      console.log('Source file and their related tests:');
       console.log(diffResult);
     });
   });
 }
 
-function runSpec(specFile) {
-  let indexFile = getIndexFile(specFile);
+function runTestInPhantom(testFile) {
+  let indexFile = getIndexFile(testFile);
   ph.createPage((page) => {
     page.open('http://localhost:' + config.httpServerPort + '/' + indexFile, () => {
       page.evaluate(() => {
@@ -113,14 +109,14 @@ function runSpec(specFile) {
         let success = true;
         for (let string of result) {
           let it = JSON.parse(string);
-          if(it.status === 'passed') {
+          if (it.status === 'passed') {
             console.log(colors.green(it.description));
           } else {
             console.log(colors.red(it.description));
             success = false;
           }
         }
-        console.log('Spec ', success ? colors.green(specFile) : colors.red(specFile));
+        console.log('Test ', success ? colors.green(testFile) : colors.red(testFile));
       });
     });
   });
@@ -129,13 +125,13 @@ function runSpec(specFile) {
 function runTest(file) {
   phantomBoot.then(() => {
     if (diffResult[file]) {
-      console.log('code file, running specs: ', diffResult[file]);
-      for(let specFile of diffResult[file]) {
-        runSpec(specFile);
+      console.log('Source file changed, running related tests: ', diffResult[file]);
+      for (let testFile of diffResult[file]) {
+        runTestInPhantom(testFile);
       }
     } else {
-      console.log('spec file, running only this: ', file);
-      runSpec(file);
+      console.log('Test file changed, running only this: ', file);
+      runTestInPhantom(file);
     }
   });
 }

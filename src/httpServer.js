@@ -5,13 +5,13 @@ import config from './config';
 
 
 let httpServer;
-let tmpServe = serveStatic(config.tmpPath);
+let generatedServe = serveStatic(config.generatedPath);
 let staticServe = serveStatic(config.staticPath);
 let rootServe = serveStatic('.');
 
 function serve() {
   httpServer = http.createServer((req, res) => {
-    tmpServe(req, res, () => {
+    generatedServe(req, res, () => {
       staticServe(req, res, () => {
         rootServe(req, res, finalhandler(req, res));
       });

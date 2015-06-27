@@ -1,20 +1,18 @@
 import istanbul from 'istanbul';
 import path from 'path';
 import fs from 'fs';
+import mkdirp from 'mkdirp';
 import config from './config';
 
 
-function writeInstrumented(files) {
+function writeInstrumented(filePaths) {
   let instrumenter = new istanbul.Instrumenter();
-  let instruFiles = [];
-  for (let file of files) {
-    let code = fs.readFileSync(file, 'utf8');
-    let instrumentedName = path.parse(file).name + '.instrumented.js';
-    let instrCode = instrumenter.instrumentSync(code, file);
-    fs.writeFileSync(config.tmpPath + instrumentedName, instrCode);
-    instruFiles.push(instrumentedName);
+  for (let filePath of filePaths) {
+    let code = fs.readFileSync(filePath, 'utf8');
+    let instrumentedCode = instrumenter.instrumentSync(code, filePath);
+    mkdirp.sync(config.generatedPath + path.parse(filePath).dir);
+    fs.writeFileSync(config.generatedPath + filePath, instrumentedCode);
   }
-  return instruFiles;
 }
 
 

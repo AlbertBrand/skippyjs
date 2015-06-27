@@ -4,8 +4,8 @@ let staticPath = 'static/';
 
 let tmpPath = '.tmp/';
 let coveragePath = tmpPath + 'coverage/';
-let instrumentedPath = tmpPath + 'instrumented/';
+let generatedPath = tmpPath + 'generated/';
 
 let httpServerPort = 3000;
 
-export default { testSrcPath, templatePath, staticPath, tmpPath, coveragePath, instrumentedPath, httpServerPort }
+export default { testSrcPath, templatePath, staticPath, tmpPath, coveragePath, generatedPath, httpServerPort }

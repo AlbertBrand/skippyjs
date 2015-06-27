@@ -12,7 +12,7 @@ function recreateDir(dir) {
 function cleanTmp() {
   recreateDir(config.tmpPath);
   recreateDir(config.coveragePath);
-  recreateDir(config.instrumentedPath);
+  recreateDir(config.generatedPath);
 }
 
 
