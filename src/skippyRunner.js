@@ -1,4 +1,3 @@
-/* LIBRARIES */
 import fs from 'fs-extra';
 import path from 'path';
 import phantom from 'phantom';
@@ -6,16 +5,13 @@ import compile from 'es6-template-strings/compile';
 import resolveToString from 'es6-template-strings/resolve-to-string';
 import crypto from 'crypto';
 import colors from 'colors/safe';
-
-/* CUSTOM MODULES */
-import { testSrcPath, tmpPath, coveragePath, templatePath, staticPath, port} from './config';
+import config from './config';
 import server from './httpServer';
 
-const NO_TEST = 'no-test';
 
-// prepare html template
-let scriptTemplate = compile('<script src="${src}"></script>', 'utf8');
-let runnerTemplate = compile(fs.readFileSync(templatePath + 'runner.html', 'utf8'));
+const NO_TEST = 'no-test';
+const SCRIPT_TEMPLATE = compile('<script src="${src}"></script>', 'utf8');
+const RUNNER_TEMPLATE = compile(fs.readFileSync(config.templatePath + 'runner.html', 'utf8'));
 
 let coverageOut = {};
 let diffResult = {};
@@ -39,16 +35,16 @@ function doCoverage(codeFiles, specFile) {
   console.log('doCoverage', codeFiles, specFile);
 
   let includes = [...codeFiles, specFile].map((src) => {
-    return resolveToString(scriptTemplate, { src: src });
+    return resolveToString(SCRIPT_TEMPLATE, { src: src });
   }).join('\n');
-  let out = resolveToString(runnerTemplate, { includes: includes });
+  let out = resolveToString(RUNNER_TEMPLATE, { includes: includes });
 
   let indexFile = getIndexFile(specFile);
-  fs.writeFileSync(tmpPath + indexFile, out);
+  fs.writeFileSync(config.tmpPath + indexFile, out);
 
   return new Promise((resolve, reject) => {
     ph.createPage((page) => {
-      page.open('http://localhost:' + port + '/' + indexFile, () => {
+      page.open('http://localhost:' + config.httpServerPort + '/' + indexFile, () => {
         page.evaluate(() => {
           return __coverage__;
         }, (result) => {
@@ -63,7 +59,7 @@ function doCoverage(codeFiles, specFile) {
 // store coverage
 function storeCoverage(coverage, fileName) {
   coverageOut[getCoverageName(fileName)] = coverage;
-  fs.writeFileSync(coveragePath + getCoverageName(fileName), JSON.stringify(coverage), 'utf8');
+  fs.writeFileSync(config.coveragePath + getCoverageName(fileName), JSON.stringify(coverage), 'utf8');
 }
 
 function getCoverageName(file) {
@@ -72,8 +68,6 @@ function getCoverageName(file) {
 
 function initCoverage(instruFiles, specFiles) {
   phantomBoot.then(() => {
-    console.log(colors.bgMagenta.white('SkippyJS booted!'));
-
     // prepare run of instrumentation
     let promises = [doCoverage(instruFiles, NO_TEST)];
     for (let file of specFiles) {
@@ -112,11 +106,11 @@ function initCoverage(instruFiles, specFiles) {
 function runSpec(specFile) {
   let indexFile = getIndexFile(specFile);
   ph.createPage((page) => {
-    page.open('http://localhost:' + port + '/' + indexFile, () => {
+    page.open('http://localhost:' + config.httpServerPort + '/' + indexFile, () => {
       page.evaluate(() => {
         return JSR._resultsCache;
       }, (result) => {
-        var success = true;
+        let success = true;
         for (let string of result) {
           let it = JSON.parse(string);
           if(it.status === 'passed') {
@@ -126,10 +120,7 @@ function runSpec(specFile) {
             success = false;
           }
         }
-        if(success)
-          console.log('Spec ', colors.green(specFile));
-        else
-          console.log('Spec ', colors.red(specFile));
+        console.log('Spec ', success ? colors.green(specFile) : colors.red(specFile));
       });
     });
   });
@@ -157,4 +148,5 @@ function closeServer() {
   });
 }
 
-export default { initCoverage, runTest, closeServer };
+
+export default { initCoverage, runTest, closeServer }

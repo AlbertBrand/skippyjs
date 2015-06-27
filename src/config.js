@@ -1,6 +1,11 @@
-export let testSrcPath = 'testsrc/';
-export let tmpPath = '.tmp/';
-export let coveragePath = tmpPath + 'coverage/';
-export let templatePath = 'template/';
-export let staticPath = 'static/';
-export let port = 3000;
+let testSrcPath = 'testsrc/';
+let templatePath = 'template/';
+let staticPath = 'static/';
+
+let tmpPath = '.tmp/';
+let coveragePath = tmpPath + 'coverage/';
+let instrumentedPath = tmpPath + 'instrumented/';
+
+let httpServerPort = 3000;
+
+export default { testSrcPath, templatePath, staticPath, tmpPath, coveragePath, instrumentedPath, httpServerPort }

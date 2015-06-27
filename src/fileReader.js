@@ -1,4 +1,3 @@
-/* LIBRARIES */
 import fs from 'fs-extra';
 
 export default function fileReader(folder, tests, code) {
