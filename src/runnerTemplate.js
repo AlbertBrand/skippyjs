@@ -13,15 +13,12 @@ function getRunnerFileName(testFile) {
   return 'runner-' + hash + '.html';
 }
 
-function createRunnerFile(srcFiles, testFile) {
-  let includes = [...srcFiles, testFile].map((src) => {
+function createRunnerFile(scriptFiles, runnerFileName) {
+  let includes = scriptFiles.map((src) => {
     return resolveToString(SCRIPT_TEMPLATE, { src: src });
   }).join('\n');
   let out = resolveToString(RUNNER_TEMPLATE, { includes: includes });
-  let indexFileName = getRunnerFileName(testFile);
-
-  fs.writeFileSync(config.generatedPath + indexFileName, out);
-  return indexFileName;
+  fs.writeFileSync(config.generatedPath + runnerFileName, out);
 }
 
 

@@ -8,7 +8,6 @@ import instrumenter from './instrumenter';
 
 
 const NO_TEST = 'no-test';
-
 let coverageOut = {};
 let ph;
 
@@ -20,10 +19,10 @@ let phantomBoot = new Promise((resolve) => {
   });
 });
 
-function runPage(indexFileName, evalFn) {
+function runPage(pageName, evalFn) {
   return new Promise((resolve) => {
     ph.createPage((page) => {
-      page.open('http://localhost:' + config.httpServerPort + '/' + indexFileName, () => {
+      page.open('http://localhost:' + config.httpServerPort + '/' + pageName, () => {
         page.evaluate(evalFn, resolve);
       });
     });
@@ -37,14 +36,20 @@ function getCoverageName(file) {
 function doCoverage(srcFiles, testFile) {
   console.log('Get coverage for', testFile);
 
-  const indexFile = runnerTemplate.createRunnerFile(srcFiles, testFile);
+  let scriptFiles = [...srcFiles];
+  if (testFile !== NO_TEST) {
+    scriptFiles.push(testFile);
+  }
 
-  return runPage(indexFile, () => {
+  const runnerFileName = runnerTemplate.getRunnerFileName(testFile);
+  runnerTemplate.createRunnerFile(scriptFiles, runnerFileName);
+
+  return runPage(runnerFileName, () => {
     //noinspection JSUnresolvedVariable
     return __coverage__;
   }).then((coverage) => {
-    const coverageName = getCoverageName(testFile);
-    coverageOut[coverageName] = coverage;
+    coverageOut[testFile] = coverage;
+    const coverageName = path.parse(testFile).name + '.coverage.json';
     fs.writeFileSync(config.coveragePath + coverageName, JSON.stringify(coverage), 'utf8');
   });
 }
@@ -60,11 +65,11 @@ function initCoverage(srcFiles, testFiles) {
       Promise.all(promises).then(() => {
         console.log('Diffing coverage reports...');
 
-        let noTestCoverage = coverageOut[getCoverageName(NO_TEST)];
+        let noTestCoverage = coverageOut[NO_TEST];
         let diffResult = {};
 
         for (let testFile of testFiles) {
-          let testCoverage = coverageOut[getCoverageName(testFile)];
+          let testCoverage = coverageOut[testFile];
           for (let srcFile in noTestCoverage) {
             let testBranchCov = testCoverage[srcFile].s;
             let noTestBranchCov = noTestCoverage[srcFile].s;
@@ -90,9 +95,9 @@ function initCoverage(srcFiles, testFiles) {
 
 function runTest(testFile) {
   phantomBoot.then(() => {
-    const indexFileName = runnerTemplate.getRunnerFileName(testFile);
+    const runnerFileName = runnerTemplate.getRunnerFileName(testFile);
 
-    runPage(indexFileName, () => {
+    runPage(runnerFileName, () => {
       return JSR.results;
     }).then((results) => {
       let success = true;

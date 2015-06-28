@@ -4,7 +4,6 @@ import fileWatcher from 'chokidar';
 import colors from 'colors';
 import bootstrap from './bootstrap';
 import instrumenter from './instrumenter';
-import config from './config';
 import server from './httpServer';
 import runner from './skippyRunner';
 // TODO provide config location via argument
@@ -34,5 +33,5 @@ runner.initCoverage(srcFiles, testFiles).then((diffResult) => {
     }
   }
 
-  fileWatcher.watch(config.testSrcPath).on('change', changedFile);
+  fileWatcher.watch([...srcFiles, ...testFiles]).on('change', changedFile);
 });

@@ -1,11 +1,10 @@
-let testSrcPath = 'testsrc/';
-let templatePath = 'template/';
-let staticPath = 'static/';
+const templatePath = 'template/';
+const staticPath = 'static/';
 
-let tmpPath = '.tmp/';
-let coveragePath = tmpPath + 'coverage/';
-let generatedPath = tmpPath + 'generated/';
+const tmpPath = '.tmp/';
+const coveragePath = tmpPath + 'coverage/';
+const generatedPath = tmpPath + 'generated/';
 
-let httpServerPort = 3000;
+const httpServerPort = 3000;
 
-export default { testSrcPath, templatePath, staticPath, tmpPath, coveragePath, generatedPath, httpServerPort }
+export default { templatePath, staticPath, tmpPath, coveragePath, generatedPath, httpServerPort }
