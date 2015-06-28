@@ -29,10 +29,6 @@ function runPage(pageName, evalFn) {
   });
 }
 
-function getCoverageName(file) {
-  return path.parse(file).name + '.coverage.json';
-}
-
 function doCoverage(srcFiles, testFile) {
   console.log('Get coverage for', testFile);
 
