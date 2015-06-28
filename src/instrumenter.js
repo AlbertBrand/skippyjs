@@ -5,13 +5,15 @@ import mkdirp from 'mkdirp';
 import config from './config';
 
 
+const instrumenter = new istanbul.Instrumenter();
+
 function writeInstrumented(filePaths) {
-  let instrumenter = new istanbul.Instrumenter();
   for (let filePath of filePaths) {
-    let code = fs.readFileSync(filePath, 'utf8');
-    let instrumentedCode = instrumenter.instrumentSync(code, filePath);
+    const code = fs.readFileSync(filePath, 'utf8');
+    const instrumentedCode = instrumenter.instrumentSync(code, filePath);
     mkdirp.sync(config.generatedPath + path.parse(filePath).dir);
     fs.writeFileSync(config.generatedPath + filePath, instrumentedCode);
+    console.log('Instrumented', filePath);
   }
 }
 

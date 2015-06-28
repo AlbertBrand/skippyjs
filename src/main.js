@@ -20,8 +20,19 @@ instrumenter.writeInstrumented(srcFiles);
 
 server.serve();
 
-runner.initCoverage(srcFiles, testFiles);
+runner.initCoverage(srcFiles, testFiles).then((diffResult) => {
+  function changedFile(file) {
+    if (diffResult[file]) {
+      console.log('Source file changed, instrument and run related tests:', diffResult[file]);
+      instrumenter.writeInstrumented([file]);
+      for (let testFile of diffResult[file]) {
+        runner.runTest(testFile);
+      }
+    } else {
+      console.log('Test file changed, run only this:', file);
+      runner.runTest(file);
+    }
+  }
 
-fileWatcher.watch(config.testSrcPath).on('change', function (path) {
-  runner.runTest(path);
+  fileWatcher.watch(config.testSrcPath).on('change', changedFile);
 });
