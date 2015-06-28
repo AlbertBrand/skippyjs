@@ -1,28 +1,27 @@
 // JSON Reporter for Jasmine
-// --------------------
 
-var JSR = {}
+var JSR = {
+  results: [],
 
-JSR.suiteStarted = function (suite) {
+  suiteStarted: function () {
 
-}
+  },
 
-JSR.suiteDone = function (suite) {
+  suiteDone: function () {
 
-}
+  },
 
-JSR.specStarted = function (spec) {
+  specStarted: function () {
 
-}
+  },
 
-JSR.specDone = function (spec) {
-  this._resultsCache.push(JSON.stringify(spec, null, 2))
-}
+  specDone: function (spec) {
+    this.results.push(spec);
+  },
 
-JSR.jasmineDone = function () {
+  jasmineDone: function () {
 
-}
-
-JSR._resultsCache = []
+  }
+};
 
 jasmine.getEnv().addReporter(JSR);

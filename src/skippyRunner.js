@@ -1,34 +1,26 @@
 import fs from 'fs-extra';
 import path from 'path';
 import phantom from 'phantom';
-import compile from 'es6-template-strings/compile';
-import resolveToString from 'es6-template-strings/resolve-to-string';
-import crypto from 'crypto';
 import colors from 'colors/safe';
 import config from './config';
 import server from './httpServer';
+import runnerTemplate from './runnerTemplate';
 
 
 const NO_TEST = 'no-test';
-const SCRIPT_TEMPLATE = compile('<script src="${src}"></script>', 'utf8');
-const RUNNER_TEMPLATE = compile(fs.readFileSync(config.templatePath + 'runner.html', 'utf8'));
 
 let coverageOut = {};
 let diffResult = {};
 let ph;
 
 // boot phantom
-let phantomBoot = new Promise((resolve, reject) => {
+let phantomBoot = new Promise((resolve) => {
   phantom.create((newPhantom) => {
     ph = newPhantom;
     resolve();
   });
 });
 
-function getIndexFile(testFile) {
-  let hash = crypto.createHash('md5').update(testFile).digest('hex');
-  return 'index-' + hash + '.html';
-}
 
 function storeCoverage(coverage, fileName) {
   coverageOut[getCoverageName(fileName)] = coverage;
@@ -42,18 +34,14 @@ function getCoverageName(file) {
 function doCoverage(srcFiles, testFile) {
   console.log('Get coverage for', testFile);
 
-  let includes = [...srcFiles, testFile].map((src) => {
-    return resolveToString(SCRIPT_TEMPLATE, { src: src });
-  }).join('\n');
-  let out = resolveToString(RUNNER_TEMPLATE, { includes: includes });
-
-  let indexFile = getIndexFile(testFile);
-  fs.writeFileSync(config.generatedPath + indexFile, out);
+  let indexFile = runnerTemplate.createIndexFile(srcFiles, testFile);
+  console.log(indexFile);
 
   return new Promise((resolve) => {
     ph.createPage((page) => {
       page.open('http://localhost:' + config.httpServerPort + '/' + indexFile, () => {
         page.evaluate(() => {
+          //noinspection JSUnresolvedVariable
           return __coverage__;
         }, (result) => {
           storeCoverage(result, testFile);
@@ -100,19 +88,18 @@ function initCoverage(srcFiles, testFiles) {
 }
 
 function runTestInPhantom(testFile) {
-  let indexFile = getIndexFile(testFile);
+  let indexFile = runnerTemplate.getIndexFileName(testFile);
   ph.createPage((page) => {
     page.open('http://localhost:' + config.httpServerPort + '/' + indexFile, () => {
       page.evaluate(() => {
-        return JSR._resultsCache;
-      }, (result) => {
+        return JSR.results;
+      }, (results) => {
         let success = true;
-        for (let string of result) {
-          let it = JSON.parse(string);
-          if (it.status === 'passed') {
-            console.log(colors.green(it.description));
+        for (let result of results) {
+          if (result.status === 'passed') {
+            console.log(colors.green(result.description));
           } else {
-            console.log(colors.red(it.description));
+            console.log(colors.red(result.description));
             success = false;
           }
         }
