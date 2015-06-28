@@ -19,43 +19,45 @@ let phantomBoot = new Promise((resolve) => {
   });
 });
 
-function runPage(pageName, evalFn) {
+function doRun(srcFiles, testFile) {
   return new Promise((resolve) => {
-    ph.createPage((page) => {
-      page.open('http://localhost:' + config.httpServerPort + '/' + pageName, () => {
-        page.evaluate(evalFn, resolve);
+    let scriptFiles = [...srcFiles];
+    if (testFile !== NO_TEST) {
+      scriptFiles.push(testFile);
+    }
+
+    const runnerFileName = runnerTemplate.getRunnerFileName(testFile);
+    runnerTemplate.createRunnerFile(scriptFiles, runnerFileName);
+
+    phantomBoot.then(() => {
+      ph.createPage((page) => {
+        console.log('Running', testFile);
+        page.open('http://localhost:' + config.httpServerPort + '/' + runnerFileName, () => {
+          page.evaluate(() => {
+            //noinspection JSUnresolvedVariable
+            return { coverage: __coverage__, testResults: JSR.results };
+          }, resolve);
+        });
       });
     });
   });
 }
 
-function doCoverage(srcFiles, testFile) {
-  console.log('Get coverage for', testFile);
-
-  let scriptFiles = [...srcFiles];
-  if (testFile !== NO_TEST) {
-    scriptFiles.push(testFile);
-  }
-
-  const runnerFileName = runnerTemplate.getRunnerFileName(testFile);
-  runnerTemplate.createRunnerFile(scriptFiles, runnerFileName);
-
-  return runPage(runnerFileName, () => {
-    //noinspection JSUnresolvedVariable
-    return __coverage__;
-  }).then((coverage) => {
-    coverageOut[testFile] = coverage;
+function getCoverage(srcFiles, testFile) {
+  return doRun(srcFiles, testFile).then((result) => {
+    console.log('Got coverage for', testFile);
+    coverageOut[testFile] = result.coverage;
     const coverageName = path.parse(testFile).name + '.coverage.json';
-    fs.writeFileSync(config.coveragePath + coverageName, JSON.stringify(coverage), 'utf8');
+    fs.writeFileSync(config.coveragePath + coverageName, JSON.stringify(result.coverage), 'utf8');
   });
 }
 
 function initCoverage(srcFiles, testFiles) {
   return new Promise((resolve) => {
     phantomBoot.then(() => {
-      let promises = [doCoverage(srcFiles, NO_TEST)];
+      let promises = [getCoverage(srcFiles, NO_TEST)];
       for (let testFile of testFiles) {
-        promises.push(doCoverage(srcFiles, testFile));
+        promises.push(getCoverage(srcFiles, testFile));
       }
 
       Promise.all(promises).then(() => {
@@ -89,24 +91,18 @@ function initCoverage(srcFiles, testFiles) {
   });
 }
 
-function runTest(testFile) {
-  phantomBoot.then(() => {
-    const runnerFileName = runnerTemplate.getRunnerFileName(testFile);
-
-    runPage(runnerFileName, () => {
-      return JSR.results;
-    }).then((results) => {
-      let success = true;
-      for (let result of results) {
-        if (result.status === 'passed') {
-          console.log(colors.green(result.description));
-        } else {
-          console.log(colors.red(result.description));
-          success = false;
-        }
+function runTest(srcFiles, testFile) {
+  doRun(srcFiles, testFile).then((result) => {
+    let success = true;
+    for (let testResult of result.testResults) {
+      if (testResult.status === 'passed') {
+        console.log(colors.green(testResult.description));
+      } else {
+        console.log(colors.red(testResult.description));
+        success = false;
       }
-      console.log('Test', success ? 'succeeded: ' + colors.green(testFile) : 'failed: ' + colors.red(testFile));
-    });
+    }
+    console.log('Test', success ? 'succeeded: ' + colors.green(testFile) : 'failed: ' + colors.red(testFile));
   });
 }
 

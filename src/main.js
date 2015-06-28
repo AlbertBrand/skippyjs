@@ -22,14 +22,14 @@ server.serve();
 runner.initCoverage(srcFiles, testFiles).then((diffResult) => {
   function changedFile(file) {
     if (diffResult[file]) {
-      console.log('Source file changed, instrument and run related tests:', diffResult[file]);
+      console.log('Source file changed');
       instrumenter.writeInstrumented([file]);
       for (let testFile of diffResult[file]) {
-        runner.runTest(testFile);
+        runner.runTest(srcFiles, testFile);
       }
     } else {
-      console.log('Test file changed, run only this:', file);
-      runner.runTest(file);
+      console.log('Test file changed');
+      runner.runTest(srcFiles, file);
     }
   }
 
