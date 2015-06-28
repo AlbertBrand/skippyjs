@@ -4,7 +4,6 @@ import phantom from 'phantom';
 import colors from 'colors/safe';
 import config from './config';
 import runnerTemplate from './runnerTemplate';
-import instrumenter from './instrumenter';
 
 
 const NO_TEST = 'no-test';
@@ -52,41 +51,39 @@ function getCoverage(srcFiles, testFile) {
   });
 }
 
-function initCoverage(srcFiles, testFiles) {
+function getSrcTestMapping(srcFiles, testFiles) {
   return new Promise((resolve) => {
-    phantomBoot.then(() => {
-      let promises = [getCoverage(srcFiles, NO_TEST)];
+    let promises = [getCoverage(srcFiles, NO_TEST)];
+    for (let testFile of testFiles) {
+      promises.push(getCoverage(srcFiles, testFile));
+    }
+
+    Promise.all(promises).then(() => {
+      console.log('Diffing coverage reports...');
+
+      let noTestCoverage = coverageOut[NO_TEST];
+      let mapping = {};
+
       for (let testFile of testFiles) {
-        promises.push(getCoverage(srcFiles, testFile));
-      }
-
-      Promise.all(promises).then(() => {
-        console.log('Diffing coverage reports...');
-
-        let noTestCoverage = coverageOut[NO_TEST];
-        let diffResult = {};
-
-        for (let testFile of testFiles) {
-          let testCoverage = coverageOut[testFile];
-          for (let srcFile in noTestCoverage) {
-            let testBranchCov = testCoverage[srcFile].s;
-            let noTestBranchCov = noTestCoverage[srcFile].s;
-            for (let i in noTestBranchCov) {
-              if (testBranchCov[i] != noTestBranchCov[i]) {
-                if (!diffResult[srcFile]) {
-                  diffResult[srcFile] = [];
-                }
-                diffResult[srcFile].push(testFile);
-                break;
+        let testCoverage = coverageOut[testFile];
+        for (let srcFile in noTestCoverage) {
+          let testBranchCov = testCoverage[srcFile].s;
+          let noTestBranchCov = noTestCoverage[srcFile].s;
+          for (let i in noTestBranchCov) {
+            if (testBranchCov[i] != noTestBranchCov[i]) {
+              if (!mapping[srcFile]) {
+                mapping[srcFile] = [];
               }
+              mapping[srcFile].push(testFile);
+              break;
             }
           }
         }
+      }
 
-        console.log('Source files and their related tests:');
-        console.log(diffResult);
-        resolve(diffResult);
-      });
+      console.log('Source files and their related tests:');
+      console.log(mapping);
+      resolve(mapping);
     });
   });
 }
@@ -114,4 +111,4 @@ function close() {
 }
 
 
-export default { initCoverage, runTest, close }
+export default { getSrcTestMapping, runTest, close }

@@ -19,12 +19,12 @@ instrumenter.writeInstrumented(srcFiles);
 
 server.serve();
 
-runner.initCoverage(srcFiles, testFiles).then((diffResult) => {
+runner.getSrcTestMapping(srcFiles, testFiles).then((mapping) => {
   function changedFile(file) {
-    if (diffResult[file]) {
+    if (mapping[file]) {
       console.log('Source file changed');
       instrumenter.writeInstrumented([file]);
-      for (let testFile of diffResult[file]) {
+      for (let testFile of mapping[file]) {
         runner.runTest(srcFiles, testFile);
       }
     } else {
