@@ -1,22 +1,15 @@
 import fs from 'fs-extra';
 import path from 'path';
-import phantom from 'phantom';
 import colors from 'colors/safe';
 import config from './config';
 import runnerTemplate from './runnerTemplate';
+import phantomPool from './phantomPool';
 
 
 const NO_TEST = 'no-test';
 let coverageOut = {};
-let ph;
 
-// boot phantom
-let phantomBoot = new Promise((resolve) => {
-  phantom.create((phantomInstance) => {
-    ph = phantomInstance;
-    resolve();
-  });
-});
+phantomPool.boot();
 
 function doRun(srcFiles, testFile) {
   return new Promise((resolve) => {
@@ -28,16 +21,12 @@ function doRun(srcFiles, testFile) {
     const runnerFileName = runnerTemplate.getRunnerFileName(testFile);
     runnerTemplate.createRunnerFile(scriptFiles, runnerFileName);
 
-    phantomBoot.then(() => {
-      ph.createPage((page) => {
-        console.log('Running', testFile);
-        page.open('http://localhost:' + config.httpServerPort + '/' + runnerFileName, () => {
-          page.evaluate(() => {
-            //noinspection JSUnresolvedVariable
-            return { coverage: __coverage__, testResults: JSR.results };
-          }, resolve);
-        });
-      });
+    console.log('Running', testFile);
+    phantomPool.openPage('http://localhost:' + config.httpServerPort + '/' + runnerFileName, (page) => {
+      page.evaluate(() => {
+        //noinspection JSUnresolvedVariable
+        return { coverage: __coverage__, testResults: JSR.results };
+      }, resolve);
     });
   });
 }
@@ -104,10 +93,7 @@ function runTest(srcFiles, testFile) {
 }
 
 function close() {
-  phantomBoot.then(() => {
-    console.log('Closing phantom');
-    ph.exit();
-  });
+  phantomPool.close();
 }
 
 
