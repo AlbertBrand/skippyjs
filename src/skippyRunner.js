@@ -67,10 +67,10 @@ function getSrcTestMapping(srcFiles, testFiles) {
       for (let testFile of testFiles) {
         let testCoverage = coverageOut[testFile];
         for (let srcFile in noTestCoverage) {
-          let testBranchCov = testCoverage[srcFile].s;
-          let noTestBranchCov = noTestCoverage[srcFile].s;
-          for (let i in noTestBranchCov) {
-            if (testBranchCov[i] != noTestBranchCov[i]) {
+          let testStmtCov = testCoverage[srcFile].s;
+          let noTestStmtCov = noTestCoverage[srcFile].s;
+          for (let i in noTestStmtCov) {
+            if (testStmtCov[i] != noTestStmtCov[i]) {
               if (!mapping[srcFile]) {
                 mapping[srcFile] = [];
               }

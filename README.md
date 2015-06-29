@@ -1,35 +1,41 @@
 init
- - onderscheid spec & code
+
+ - configure srcFiles & testFiles
  - instrument all specs
  - boot http server
- - no test coverage bepalen
- - per spec coverage bepalen
- - link bepalen spec files en code files
+ - determine no test coverage
+ - determine coverage per test
+ - determine link between src and test
 
 file watcher
- - if spec: instrument single spec & run single spec
- - else code: bepaal welke specs gerunt moeten worden en run
 
-output genereren van gerunde test
-
-
--- parallelisatie (createPage of phantom proces)
--- link met 'it' block en code files (ipv spec files met code files)
--- api beschikbaar voor file changes
--- console.log & jasmin output
+ - if test: run single test
+ - else src: instrument src and run linked tests
+ - output test(s) result
 
 
+TODO:
 
+ - app crashes when js under test contains parse errors
+ - parallelisation (createPage or phantom process?)
+ - more fine-grained link between test 'it' block and src files
+ - create API for file changes / test running
+ - console.log & test output
+ - srcFiles without instrumentation
+ - remove dependence on test framework, configure your own
+ - js-reporters integration
+ 
 
-{
-files: [
- 'src/file1.js': [
-    'src/file1.spec.js',
-    'integration.spec.js'
- ],
- 'src/file2.js: [
-    'src/file2.spec.js',
-    'integration.spec.js'
- ]
-]
-}
+Linked file format:
+
+    {
+      'src/file1.js': [
+        'src/file1.spec.js',
+        'integration.spec.js'
+      ],
+      'src/file2.js: [
+        'src/file2.spec.js',
+        'integration.spec.js'
+      ]
+    }
+
