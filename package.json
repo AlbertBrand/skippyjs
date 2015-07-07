@@ -12,8 +12,10 @@
     "finalhandler": "^0.3.6",
     "fs-extra": "^0.18.3",
     "istanbul": "^0.3.14",
+    "lodash": "^3.10.0",
     "mkdirp": "^0.5.1",
     "phantom": "^0.7.2",
+    "promise-queue": "^2.1.1",
     "serve-static": "^1.9.3"
   }
 }
