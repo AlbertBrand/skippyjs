@@ -1,6 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import colors from 'colors/safe';
+import _ from 'lodash';
 import config from './config';
 import runnerTemplate from './runnerTemplate';
 import phantomPool from './phantomPool';
@@ -83,6 +84,8 @@ function runTest(srcFiles, testFile) {
         console.log(colors.green(testResult.description));
       } else {
         console.log(colors.red(testResult.description));
+        console.log('Failed expectations:');
+        console.log(_.pluck(testResult.failedExpectations, 'message').join('\n'));
         success = false;
       }
     }
