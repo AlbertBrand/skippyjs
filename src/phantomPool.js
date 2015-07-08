@@ -3,30 +3,29 @@ import Queue from 'promise-queue';
 import _ from 'lodash';
 
 
-const MAX_PROCESSES = 8;
-const processes = [];
+let processes;
 let booted;
-let queue = new Queue(MAX_PROCESSES, Infinity);
+let queue;
 
 function createPhantomProcess() {
   return new Promise((resolve) => {
     phantom.create((instance) => {
-      processes.push({
+      resolve({
         instance: instance,
         active: false
       });
-      resolve();
     });
   });
 }
 
-function boot() {
-  let promises = _.times(MAX_PROCESSES, () => {
+function boot(maxProcesses = 8) {
+  queue = new Queue(maxProcesses, Infinity);
+  booted = Promise.all(_.times(maxProcesses, () => {
     return createPhantomProcess();
-  });
-  booted = Promise.all(promises)
-    .then(() => {
-      console.log('Phantom booted');
+  }))
+    .then((result) => {
+      processes = result;
+      console.log(`${maxProcesses} instances of Phantom started`);
     });
 }
 
@@ -61,7 +60,7 @@ function openPage(pageUrl, openFn) {
           page.set('onResourceError', (resourceError) => {
             console.log('Unable to load resource', resourceError.url);
             //noinspection JSUnresolvedVariable
-            console.log('Error code: ' + resourceError.errorCode + '. Description: ' + resourceError.errorString);
+            console.log(`Error code: ${resourceError.errorCode}. Description: ${resourceError.errorString}`);
           });
 
           page.open(pageUrl);

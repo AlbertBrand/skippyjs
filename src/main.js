@@ -6,12 +6,15 @@ import bootstrap from './bootstrap';
 import instrumenter from './instrumenter';
 import server from './httpServer';
 import runner from './skippyRunner';
+import phantomPool from './phantomPool';
 // TODO provide config location via argument
-import {srcFiles, testFiles} from '../skippyConfig';
+import {srcFiles, testFiles, maxProcesses} from '../skippyConfig';
 
 
 console.log(colors.bgMagenta.white('SkippyJS'));
 console.log(colors.bgMagenta.white('--------'));
+
+phantomPool.boot(maxProcesses);
 
 bootstrap.cleanTmp();
 

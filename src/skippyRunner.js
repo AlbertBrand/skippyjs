@@ -9,8 +9,6 @@ import phantomPool from './phantomPool';
 const NO_TEST = 'no-test';
 let coverageOut = {};
 
-phantomPool.boot();
-
 function doRun(srcFiles, testFile) {
   return new Promise((resolve) => {
     let scriptFiles = [...srcFiles];

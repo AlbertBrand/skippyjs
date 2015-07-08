@@ -11,3 +11,4 @@ export let testFiles = [
   'testsrc/file1.spec.js',
   'testsrc/Calc/file2.spec.js'
 ];
+export let maxProcesses = 8;
