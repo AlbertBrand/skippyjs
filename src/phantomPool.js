@@ -29,14 +29,31 @@ function boot(maxProcesses = 8) {
     });
 }
 
-function openPage(pageUrl, openFn) {
+function openPage(pageUrl, openFn, errorFn) {
   booted.then(() => {
     queue.add(() => {
       return new Promise((resolve) => {
-        let processIdx = _.findIndex(processes, { active: false });
-        console.log('Running page with process', processIdx);
-        processes[processIdx].active = true;
-        processes[processIdx].instance.createPage((page) => {
+        let processIdx = _.findIndex(processes, { active: false }),
+          process = processes[processIdx],
+          finished = false;
+
+        function start() {
+          console.log('Running page with process', processIdx);
+          process.active = true;
+        }
+
+        function finish() {
+          if (!finished) {
+            console.log('Finishing page with process', processIdx);
+            process.active = false;
+            finished = true;
+            resolve();
+          }
+        }
+
+        start();
+
+        process.instance.createPage((page) => {
           let resourceCount = 0;
 
           page.set('onResourceRequested', (res) => {
@@ -52,15 +69,17 @@ function openPage(pageUrl, openFn) {
             resourceCount--;
             if (resourceCount === 0) {
               openFn(page);
-              console.log('Finished running page with process', processIdx);
-              processes[processIdx].active = false;
-              resolve();
+              finish();
             }
           });
           page.set('onResourceError', (resourceError) => {
             console.log('Unable to load resource', resourceError.url);
             //noinspection JSUnresolvedVariable
             console.log(`Error code: ${resourceError.errorCode}. Description: ${resourceError.errorString}`);
+          });
+          page.set('onError', (msg) => {
+            errorFn({ msg });
+            finish();
           });
 
           page.open(pageUrl);

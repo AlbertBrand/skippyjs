@@ -11,7 +11,7 @@ const NO_TEST = 'no-test';
 let coverageOut = {};
 
 function doRun(srcFiles, testFile) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let scriptFiles = [...srcFiles];
     if (testFile !== NO_TEST) {
       scriptFiles.push(testFile);
@@ -21,12 +21,18 @@ function doRun(srcFiles, testFile) {
     runnerTemplate.createRunnerFile(scriptFiles, runnerFileName);
 
     console.log('Running', testFile);
-    phantomPool.openPage('http://localhost:' + config.httpServerPort + '/' + runnerFileName, (page) => {
-      page.evaluate(() => {
-        //noinspection JSUnresolvedVariable
-        return { coverage: __coverage__, testResults: JSR.results };
-      }, resolve);
-    });
+    phantomPool.openPage(
+      'http://localhost:' + config.httpServerPort + '/' + runnerFileName,
+      (page) => {
+        page.evaluate(() => {
+          //noinspection JSUnresolvedVariable
+          return { coverage: __coverage__, testResults: JSR.results };
+        }, resolve);
+      },
+      (error) => {
+        reject(error);
+      }
+    );
   });
 }
 
@@ -72,13 +78,21 @@ function getSrcTestMapping(srcFiles, testFiles) {
       console.log('Source files and their related tests:');
       console.log(mapping);
       resolve(mapping);
+
+    }).catch((error) => {
+      console.log(colors.red('Error during mapping phase, fix and restart'));
+      console.log(colors.red(error.msg));
     });
   });
 }
 
 function runTest(srcFiles, testFile) {
   doRun(srcFiles, testFile).then((result) => {
-    let success = true;
+    console.log(_.all(result.testResults, 'status', 'passed') ?
+        colors.bgGreen.black(`Test succeeded: ${testFile}`) :
+        colors.bgRed(`Test failed: ${testFile}`)
+    );
+
     for (let testResult of result.testResults) {
       if (testResult.status === 'passed') {
         console.log(colors.green(testResult.description));
@@ -86,10 +100,12 @@ function runTest(srcFiles, testFile) {
         console.log(colors.red(testResult.description));
         console.log('Failed expectations:');
         console.log(_.pluck(testResult.failedExpectations, 'message').join('\n'));
-        success = false;
       }
     }
-    console.log('Test', success ? 'succeeded: ' + colors.green(testFile) : 'failed: ' + colors.red(testFile));
+
+  }).catch((error) => {
+    console.log(colors.red('Error during test run of', testFile));
+    console.log(colors.red(error.msg));
   });
 }
 
