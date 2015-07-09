@@ -6,12 +6,6 @@ var My = {
 
   sum: function (a, b) {
     return a + b;
-  },
-
-  takesLong: function() {
-    for(var i=0; i<1000000000; i++) {
-    }
-    return "done";
   }
 };
 

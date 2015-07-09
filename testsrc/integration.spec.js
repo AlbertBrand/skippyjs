@@ -6,8 +6,4 @@ describe('integration of My and Calc', function () {
   it('should compute square root of 10 and divide by 2', function () {
     expect(Calc.divide(My.sum(10, 10), 5)).toBe(4);
   });
-
-  it("should take long", function () {
-    expect(My.takesLong()).toBe("done");
-  });
 });

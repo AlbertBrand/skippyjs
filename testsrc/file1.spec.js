@@ -10,8 +10,4 @@ describe("sqrt", function () {
   it("should sum", function () {
     expect(My.sum(1, 2)).toBe(3);
   });
-
-  it("should take long", function () {
-    expect(My.takesLong()).toBe("done");
-  });
 });
