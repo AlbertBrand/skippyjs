@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import mkdirp from 'mkdirp';
 import colors from 'colors/safe';
 import _ from 'lodash';
 import config from './config';
@@ -8,7 +9,6 @@ import phantomPool from './phantomPool';
 
 
 const NO_TEST = 'no-test';
-let coverageOut = {};
 
 function doRun(srcFiles, testFile) {
   return new Promise((resolve, reject) => {
@@ -27,7 +27,9 @@ function doRun(srcFiles, testFile) {
         page.evaluate(() => {
           //noinspection JSUnresolvedVariable
           return { coverage: __coverage__, testResults: JSR.results };
-        }, resolve);
+        }, (result) => {
+          resolve({ testFile, coverage: result.coverage, testResults: result.testResults });
+        });
       },
       (error) => {
         reject(error);
@@ -38,28 +40,29 @@ function doRun(srcFiles, testFile) {
 
 function getCoverage(srcFiles, testFile) {
   return doRun(srcFiles, testFile).then((result) => {
-    console.log('Got coverage for', testFile);
-    coverageOut[testFile] = result.coverage;
-    const coverageName = path.parse(testFile).name + '.coverage.json';
-    fs.writeFileSync(config.coveragePath + coverageName, JSON.stringify(result.coverage), 'utf8');
+    console.log('Writing coverage to disk for', testFile);
+    const coverageName = path.parse(testFile).base + '.json';
+    const destPath = config.coveragePath + path.parse(testFile).dir;
+    mkdirp.sync(destPath);
+    fs.writeFileSync(destPath + '/' + coverageName, JSON.stringify(result.coverage), 'utf8');
+    return result;
   });
 }
 
 function getSrcTestMapping(srcFiles, testFiles) {
   return new Promise((resolve) => {
-    let promises = [getCoverage(srcFiles, NO_TEST)];
-    for (let testFile of testFiles) {
-      promises.push(getCoverage(srcFiles, testFile));
-    }
+    let promises = [getCoverage(srcFiles, NO_TEST), ..._.map(testFiles, (testFile) => {
+      return getCoverage(srcFiles, testFile);
+    })];
 
-    Promise.all(promises).then(() => {
+    Promise.all(promises).then((result) => {
       console.log('Diffing coverage reports...');
 
-      let noTestCoverage = coverageOut[NO_TEST];
+      let noTestCoverage = _.find(result, 'testFile', NO_TEST).coverage;
       let mapping = {};
 
       for (let testFile of testFiles) {
-        let testCoverage = coverageOut[testFile];
+        let testCoverage = _.find(result, 'testFile', testFile).coverage;
         for (let srcFile in noTestCoverage) {
           let testStmtCov = testCoverage[srcFile].s;
           let noTestStmtCov = noTestCoverage[srcFile].s;

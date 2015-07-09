@@ -1,6 +1,6 @@
 import istanbul from 'istanbul';
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs-extra';
 import mkdirp from 'mkdirp';
 import colors from 'colors/safe';
 import config from './config';
