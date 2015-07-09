@@ -9,7 +9,9 @@ let queue;
 
 function createPhantomProcess() {
   return new Promise((resolve) => {
-    phantom.create((instance) => {
+    phantom.create({
+      binary: './node_modules/phantomjs/bin/phantomjs'
+    }, (instance) => {
       resolve({
         instance: instance,
         active: false
