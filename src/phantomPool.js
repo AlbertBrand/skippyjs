@@ -1,6 +1,7 @@
 import phantom from 'phantom';
 import Queue from 'promise-queue';
 import _ from 'lodash';
+import path from 'path';
 
 
 let processes;
@@ -10,7 +11,7 @@ let queue;
 function createPhantomProcess() {
   return new Promise((resolve) => {
     phantom.create({
-      binary: './node_modules/phantomjs/bin/phantomjs'
+      binary: path.resolve(__dirname, '../node_modules/phantomjs/bin/phantomjs')
     }, (instance) => {
       resolve({
         instance: instance,

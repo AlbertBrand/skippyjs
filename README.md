@@ -7,6 +7,17 @@ It features:
  - parallel execution of tests using multiple Phantom processes
  - map test files on source files and only run relevant tests on source/test file change
 
+Installation
+---
+
+ - Clone repo and run npm install
+ - Install as dependency in other project. As the project is not released yet, use npm link.
+ - Create a skippy config file, see skippyConfig.js for an example.
+ - Run skippyJS:
+
+
+    ./node_modules/skippyjs/bin/skippyjs mySkippyConfig.js
+
 Implementation details
 ---
 
@@ -37,6 +48,7 @@ TODO:
  - remove dependency on test framework, configure your own
  - js-reporters output
  - only show verbose log messages in debug mode
+ - warn when src/testFiles are included that do not exist
 
 
 DONE:

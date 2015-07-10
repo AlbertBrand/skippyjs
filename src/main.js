@@ -7,14 +7,22 @@ import instrumenter from './instrumenter';
 import server from './httpServer';
 import runner from './skippyRunner';
 import phantomPool from './phantomPool';
-// TODO provide config location via argument
-import {srcFiles, testFiles, maxProcesses} from '../skippyConfig';
+
+const args = process.argv.slice(2);
+if(args.length == 0) {
+  console.log(colors.red('No path provided to skippy config'));
+  process.exit(1);
+}
+
+const config = require(process.cwd() + path.sep + args[0]);
+const srcFiles = config.srcFiles;
+const testFiles = config.testFiles;
 
 
 console.log(colors.bgMagenta.white('SkippyJS'));
 console.log(colors.bgMagenta.white('--------'));
 
-phantomPool.boot(maxProcesses);
+phantomPool.boot(config.maxProcesses);
 
 bootstrap.cleanTmp();
 

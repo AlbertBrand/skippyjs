@@ -1,7 +1,10 @@
-const templatePath = 'template/';
-const staticPath = 'static/';
+const path = require('path');
+const root = path.resolve(__dirname, '..') + path.sep;
 
-const tmpPath = '.tmp/';
+const templatePath = root + 'template/';
+const staticPath = root + 'static/';
+
+const tmpPath = root + '.tmp/';
 const coveragePath = tmpPath + 'coverage/';
 const generatedPath = tmpPath + 'generated/';
 

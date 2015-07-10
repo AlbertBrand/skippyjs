@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+require('babel/register');
+var mainPath = require('path').resolve(__dirname, '../src/main');
+module.exports = require(mainPath);
