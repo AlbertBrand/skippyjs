@@ -8,14 +8,14 @@ import config from './config';
 
 const instrumenter = new istanbul.Instrumenter();
 
-function writeInstrumented(filePaths, debug) {
+function writeInstrumented(filePaths) {
   for (let filePath of filePaths) {
     try {
       const code = fs.readFileSync(filePath, 'utf8');
       const instrumentedCode = instrumenter.instrumentSync(code, filePath);
       mkdirp.sync(config.generatedPath + path.parse(filePath).dir);
       fs.writeFileSync(config.generatedPath + filePath, instrumentedCode);
-      if (debug) {
+      if (config.debug) {
         console.log('Instrumented', filePath);
       }
     } catch (error) {

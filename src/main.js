@@ -2,77 +2,52 @@ import fs from 'fs-extra';
 import path from 'path';
 import fileWatcher from 'chokidar';
 import colors from 'colors';
-import glob from 'glob-all';
 import _ from 'lodash';
+import config from './config'; // make sure config is loaded first
 import bootstrap from './bootstrap';
 import instrumenter from './instrumenter';
 import server from './httpServer';
 import runner from './skippyRunner';
 import phantomPool from './phantomPool';
 
-const args = process.argv.slice(2);
-if (args.length == 0) {
-  console.log(colors.red('No path provided to skippy config'));
-  process.exit(1);
-}
-/**
- * @type {{testFramework, instrumentFiles, srcFiles, testFiles, staticFiles, maxProcesses, debug}}
- */
-const config = require(process.cwd() + path.sep + args[0]);
-
-let srcFiles = glob.sync(config.srcFiles);
-const instrumentFiles = glob.sync(config.instrumentFiles);
-const testFiles = glob.sync(config.testFiles);
-const staticFiles = glob.sync(config.staticFiles); // TODO
-const debug = config.debug;
-
-if (config.testFramework.startsWith('jasmine')) {
-  srcFiles = [
-    'jasmine/' + config.testFramework + '/jasmine.js',
-    'jasmine/' + config.testFramework + '/jasmine-html.js',
-    'jasmine/' + config.testFramework + '/boot.js',
-    'jasmine/jasmine-json-reporter.js'
-  ].concat(srcFiles);
-}
-
 
 console.log(colors.bgMagenta.white('SkippyJS'));
 console.log(colors.bgMagenta.white('--------'));
 
-phantomPool.boot(config.maxProcesses);
+phantomPool.boot();
 
 bootstrap.cleanTmp();
 
-instrumenter.writeInstrumented(instrumentFiles, debug);
+instrumenter.writeInstrumented(config.instrumentFiles);
 
 // TODO serve only configured files
 server.serve();
 
-runner.getSrcTestMapping(srcFiles, testFiles).then((mapping) => {
+runner.getSrcTestMapping().then((mapping) => {
   function changedFile(file) {
-    if (_.includes(instrumentFiles, file)) {
-      if (debug) {
+    if (_.includes(config.instrumentFiles, file)) {
+      if (config.debug) {
         console.log('Instrumented source file changed');
       }
       instrumenter.writeInstrumented([file]);
       for (let testFile of mapping[file]) {
-        runner.runTest(srcFiles, testFile);
+        runner.runTest(testFile);
       }
 
-    } else if (_.includes(srcFiles, file)) {
-      if (debug) {
+    } else if (_.includes(config.srcFiles, file)) {
+      if (config.debug) {
         console.log('Non-instrumented source file changed');
       }
       // TODO decide what to do here
 
-    } else if (_.includes(testFiles, file)) {
-      if (debug) {
+    } else if (_.includes(config.testFiles, file)) {
+      if (config.debug) {
         console.log('Test file changed');
       }
-      runner.runTest(srcFiles, file);
+      runner.runTest(file);
     }
   }
 
   console.log('Watching file changes');
-  fileWatcher.watch([...srcFiles, ...testFiles]).on('change', changedFile);
+  fileWatcher.watch([...config.srcFiles, ...config.testFiles]).on('change', changedFile);
 });

@@ -10,9 +10,9 @@ import phantomPool from './phantomPool';
 
 const NO_TEST = 'no-test';
 
-function doRun(srcFiles, testFile) {
+function doRun(testFile) {
   return new Promise((resolve, reject) => {
-    let scriptFiles = [...srcFiles];
+    let scriptFiles = [...config.srcFiles];
     if (testFile !== NO_TEST) {
       scriptFiles.push(testFile);
     }
@@ -20,7 +20,9 @@ function doRun(srcFiles, testFile) {
     const runnerFileName = runnerTemplate.getRunnerFileName(testFile);
     runnerTemplate.createRunnerFile(scriptFiles, runnerFileName);
 
-    console.log('Running', testFile);
+    if (config.debug) {
+      console.log('Running', testFile);
+    }
     phantomPool.openPage(
       'http://localhost:' + config.httpServerPort + '/' + runnerFileName,
       (page) => {
@@ -38,9 +40,11 @@ function doRun(srcFiles, testFile) {
   });
 }
 
-function getCoverage(srcFiles, testFile) {
-  return doRun(srcFiles, testFile).then((result) => {
-    console.log('Writing coverage to disk for', testFile);
+function getCoverage(testFile) {
+  return doRun(testFile).then((result) => {
+    if (config.debug) {
+      console.log('Writing coverage to disk for', testFile);
+    }
     const coverageName = path.parse(testFile).base + '.json';
     const destPath = config.coveragePath + path.parse(testFile).dir;
     mkdirp.sync(destPath);
@@ -49,19 +53,21 @@ function getCoverage(srcFiles, testFile) {
   });
 }
 
-function getSrcTestMapping(srcFiles, testFiles) {
+function getSrcTestMapping() {
   return new Promise((resolve) => {
-    let promises = [getCoverage(srcFiles, NO_TEST), ..._.map(testFiles, (testFile) => {
-      return getCoverage(srcFiles, testFile);
+    let promises = [getCoverage(NO_TEST), ..._.map(config.testFiles, (testFile) => {
+      return getCoverage(testFile);
     })];
 
     Promise.all(promises).then((result) => {
-      console.log('Diffing coverage reports...');
+      if (config.debug) {
+        console.log('Diffing coverage reports...');
+      }
 
       let noTestCoverage = _.find(result, 'testFile', NO_TEST).coverage;
       let mapping = {};
 
-      for (let testFile of testFiles) {
+      for (let testFile of config.testFiles) {
         let testCoverage = _.find(result, 'testFile', testFile).coverage;
         for (let instrumentedFile in noTestCoverage) {
           let testStmtCov = testCoverage[instrumentedFile].s;
@@ -89,8 +95,8 @@ function getSrcTestMapping(srcFiles, testFiles) {
   });
 }
 
-function runTest(srcFiles, testFile) {
-  doRun(srcFiles, testFile).then((result) => {
+function runTest(testFile) {
+  doRun(testFile).then((result) => {
     console.log(_.all(result.testResults, 'status', 'passed') ?
         colors.bgGreen.black(`Test succeeded: ${testFile}`) :
         colors.bgRed(`Test failed: ${testFile}`)

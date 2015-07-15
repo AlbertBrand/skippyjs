@@ -2,6 +2,7 @@ import phantom from 'phantom';
 import Queue from 'promise-queue';
 import _ from 'lodash';
 import path from 'path';
+import config from './config';
 
 
 let processes;
@@ -21,14 +22,16 @@ function createPhantomProcess() {
   });
 }
 
-function boot(maxProcesses = 8) {
-  queue = new Queue(maxProcesses, Infinity);
-  booted = Promise.all(_.times(maxProcesses, () => {
+function boot() {
+  queue = new Queue(config.maxProcesses, Infinity);
+  booted = Promise.all(_.times(config.maxProcesses, () => {
     return createPhantomProcess();
   }))
     .then((result) => {
       processes = result;
-      console.log(`${maxProcesses} instances of Phantom started`);
+      if (config.debug) {
+        console.log(`${config.maxProcesses} instances of Phantom started`);
+      }
     });
 }
 
@@ -41,13 +44,17 @@ function openPage(pageUrl, openFn, errorFn) {
           finished = false;
 
         function start() {
-          console.log('Running page with process', processIdx);
+          if (config.debug) {
+            console.log('Running page with process', processIdx);
+          }
           process.active = true;
         }
 
         function finish() {
           if (!finished) {
-            console.log('Finishing page with process', processIdx);
+            if (config.debug) {
+              console.log('Finishing page with process', processIdx);
+            }
             process.active = false;
             finished = true;
             resolve();
