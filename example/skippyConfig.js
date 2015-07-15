@@ -1,6 +1,6 @@
 export let instrumentFiles = [
-  'testsrc/**/*.js',
-  '!testsrc/**/*.spec.js'
+  'src/**/*.js',
+  '!src/**/*.spec.js'
 ];
 
 export let srcFiles = [
@@ -8,7 +8,7 @@ export let srcFiles = [
 ];
 
 export let testFiles = [
-  'testsrc/**/*.spec.js'
+  'src/**/*.spec.js'
 ];
 
 export let staticFiles = [];
