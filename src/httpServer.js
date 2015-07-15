@@ -5,9 +5,11 @@ import config from './config';
 
 
 let httpServer;
-let generatedServe = serveStatic(config.generatedPath);
-let staticServe = serveStatic(config.staticPath);
-let rootServe = serveStatic('.');
+
+// TODO serve only configured files
+const generatedServe = serveStatic(config.generatedPath);
+const staticServe = serveStatic(config.staticPath);
+const rootServe = serveStatic('.');
 
 function serve() {
   httpServer = http.createServer((req, res) => {
