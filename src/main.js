@@ -16,15 +16,24 @@ if (args.length == 0) {
   process.exit(1);
 }
 /**
- * @type {{instrumentFiles, srcFiles, testFiles, staticFiles, maxProcesses, debug}}
+ * @type {{testFramework, instrumentFiles, srcFiles, testFiles, staticFiles, maxProcesses, debug}}
  */
 const config = require(process.cwd() + path.sep + args[0]);
 
-const srcFiles = glob.sync(config.srcFiles);
+let srcFiles = glob.sync(config.srcFiles);
 const instrumentFiles = glob.sync(config.instrumentFiles);
 const testFiles = glob.sync(config.testFiles);
 const staticFiles = glob.sync(config.staticFiles); // TODO
 const debug = config.debug;
+
+if (config.testFramework.startsWith('jasmine')) {
+  srcFiles = [
+    'jasmine/' + config.testFramework + '/jasmine.js',
+    'jasmine/' + config.testFramework + '/jasmine-html.js',
+    'jasmine/' + config.testFramework + '/boot.js',
+    'jasmine/jasmine-json-reporter.js'
+  ].concat(srcFiles);
+}
 
 
 console.log(colors.bgMagenta.white('SkippyJS'));

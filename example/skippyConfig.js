@@ -1,3 +1,5 @@
+export let testFramework = 'jasmine@2.3.4';
+
 export let instrumentFiles = [
   'src/**/*.js',
   '!src/**/*.spec.js'

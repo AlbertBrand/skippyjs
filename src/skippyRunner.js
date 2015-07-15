@@ -26,7 +26,7 @@ function doRun(srcFiles, testFile) {
       (page) => {
         page.evaluate(() => {
           //noinspection JSUnresolvedVariable
-          return { coverage: __coverage__, testResults: JSR.results };
+          return { coverage: __coverage__, testResults: __testResults__ };
         }, (result) => {
           resolve({ testFile, coverage: result.coverage, testResults: result.testResults });
         });

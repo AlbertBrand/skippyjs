@@ -1,8 +1,8 @@
 // JSON Reporter for Jasmine
 
-var JSR = {
-  results: [],
+var __testResults__ = [];
 
+jasmine.getEnv().addReporter({
   suiteStarted: function () {
 
   },
@@ -16,12 +16,10 @@ var JSR = {
   },
 
   specDone: function (spec) {
-    this.results.push(spec);
+    __testResults__.push(spec);
   },
 
   jasmineDone: function () {
 
   }
-};
-
-jasmine.getEnv().addReporter(JSR);
+});
