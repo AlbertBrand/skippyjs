@@ -11,6 +11,7 @@
     "es6-template-strings": "^1.0.0",
     "finalhandler": "^0.3.6",
     "fs-extra": "^0.18.3",
+    "glob-all": "^3.0.1",
     "istanbul": "^0.3.14",
     "lodash": "^3.10.0",
     "mkdirp": "^0.5.1",

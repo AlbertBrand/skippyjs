@@ -63,15 +63,15 @@ function getSrcTestMapping(srcFiles, testFiles) {
 
       for (let testFile of testFiles) {
         let testCoverage = _.find(result, 'testFile', testFile).coverage;
-        for (let srcFile in noTestCoverage) {
-          let testStmtCov = testCoverage[srcFile].s;
-          let noTestStmtCov = noTestCoverage[srcFile].s;
+        for (let instrumentedFile in noTestCoverage) {
+          let testStmtCov = testCoverage[instrumentedFile].s;
+          let noTestStmtCov = noTestCoverage[instrumentedFile].s;
           for (let i in noTestStmtCov) {
             if (testStmtCov[i] != noTestStmtCov[i]) {
-              if (!mapping[srcFile]) {
-                mapping[srcFile] = [];
+              if (!mapping[instrumentedFile]) {
+                mapping[instrumentedFile] = [];
               }
-              mapping[srcFile].push(testFile);
+              mapping[instrumentedFile].push(testFile);
               break;
             }
           }

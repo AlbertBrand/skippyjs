@@ -8,18 +8,21 @@ import config from './config';
 
 const instrumenter = new istanbul.Instrumenter();
 
-function writeInstrumented(filePaths) {
+function writeInstrumented(filePaths, debug) {
   for (let filePath of filePaths) {
     try {
       const code = fs.readFileSync(filePath, 'utf8');
       const instrumentedCode = instrumenter.instrumentSync(code, filePath);
       mkdirp.sync(config.generatedPath + path.parse(filePath).dir);
       fs.writeFileSync(config.generatedPath + filePath, instrumentedCode);
-      console.log('Instrumented', filePath);
+      if (debug) {
+        console.log('Instrumented', filePath);
+      }
     } catch (error) {
       console.log(colors.red(`Instrumentation failed: '${error.description}' in ${filePath} [${error.lineNumber}:${error.column}]`))
     }
   }
+  console.log(`Instrumented ${filePaths.length} files`);
 }
 
 
