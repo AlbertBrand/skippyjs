@@ -6,6 +6,7 @@ It features:
  
   - parallel execution of tests using multiple Phantom processes
   - map test files on source files and only run relevant tests on source/test file change
+  - Karma preprocessor support for easy upgrading
 
 Installation
 ---
@@ -67,6 +68,32 @@ DONE:
  - show failed test run output
  - add srcFiles without instrumentation
  - add glob-syntax for file config
+ - add karma preprocessor support
+
+Preprocessor setup
+---
+
+First install your favorite Karma preprocessor using npm, for instance:
+
+    npm install --save karma-coffee-preprocessor
+    
+Then, setup the preprocessor in your config:
+
+    // ... other exports
+
+    import coffeePreprocessor from 'karma-coffee-preprocessor';
+    
+    export let preprocessors = {
+      '**/*.coffee': {
+        name: 'coffee', // preprocessor name normally specified in karma config
+        preprocessor: coffeePreprocessor,
+        config: {
+          // configuration normally specified in karma config
+        }
+      }
+    };
+
+Make sure the 'name' property is equal to the exposed preprocessor name.
 
 License
 ---

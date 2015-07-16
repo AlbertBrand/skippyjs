@@ -1,9 +1,8 @@
+import path from 'path';
 import glob from 'glob-all';
 import colors from 'colors';
 
-
 // internal settings
-const path = require('path');
 const root = path.resolve(__dirname, '..') + '/';
 
 const templatePath = root + 'template/';
@@ -23,15 +22,25 @@ if (args.length == 0) {
 }
 
 /**
- * @type {{testFramework, srcFiles, instrumentFiles, testFiles, staticFiles, maxProcesses, debug}}
+ * @type {{
+ *  testFramework,
+ *  srcFiles,
+ *  instrumentFiles,
+ *  testFiles,
+ *  staticFiles,
+ *  maxProcesses,
+ *  preprocessors,
+ *  debug
+ * }}
  */
-const config = require(process.cwd() + path.sep + args[0]);
+const config = require(process.cwd() + '/' + args[0]);
 
 let srcFiles = glob.sync(config.srcFiles || []);
 const instrumentFiles = glob.sync(config.instrumentFiles || []);
 const testFiles = glob.sync(config.testFiles || []);
 const staticFiles = glob.sync(config.staticFiles || []); // TODO
 const maxProcesses = config.maxProcesses || 8;
+const preprocessors = config.preprocessors || {};
 const debug = config.debug || false;
 
 if (config.testFramework.startsWith('jasmine')) {
@@ -57,5 +66,6 @@ export default {
   testFiles,
   staticFiles,
   maxProcesses,
+  preprocessors,
   debug
 }
