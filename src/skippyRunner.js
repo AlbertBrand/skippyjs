@@ -25,8 +25,8 @@ function doRun(testFile) {
     }
     phantomPool.openPage(
       'http://localhost:' + config.httpServerPort + '/' + runnerFileName,
-      (page) => {
-        console.time('page.evaluate');
+      (page, processIdx) => {
+        console.time('page.evaluate process ' + processIdx);
         page.evaluate(() => {
           //noinspection JSUnresolvedVariable
           let coverage = __coverage__, stmtCoverage = {};
@@ -39,7 +39,7 @@ function doRun(testFile) {
           }
           return { stmtCoverage: stmtCoverage, testResults: __testResults__ };
         }, (result) => {
-          console.timeEnd('page.evaluate');
+          console.timeEnd('page.evaluate process ' + processIdx);
           resolve({ testFile, stmtCoverage: result.stmtCoverage, testResults: result.testResults });
         });
       },
@@ -65,6 +65,7 @@ function getCoverage(testFile) {
 
 function getSrcTestMapping() {
   return new Promise((resolve) => {
+    console.time('getSrcTestMapping');
     let promises = [getCoverage(NO_TEST), ..._.map(config.testFiles, (testFile) => {
       return getCoverage(testFile);
     })];
@@ -98,6 +99,7 @@ function getSrcTestMapping() {
         console.timeEnd('diff');
       }
 
+      console.timeEnd('getSrcTestMapping');
       resolve(mapping);
 
     }).catch((error) => {

@@ -46,7 +46,7 @@ function openPage(pageUrl, openFn, errorFn) {
         function start() {
           if (config.debug) {
             console.log('Running page with process', processIdx);
-            console.time('run' + processIdx);
+            console.time('finish process ' + processIdx);
           }
           process.active = true;
         }
@@ -54,8 +54,7 @@ function openPage(pageUrl, openFn, errorFn) {
         function finish() {
           if (!finished) {
             if (config.debug) {
-              console.log('Finishing page with process', processIdx);
-              console.timeEnd('run' + processIdx);
+              console.timeEnd('finish process ' + processIdx);
             }
             process.active = false;
             finished = true;
@@ -66,23 +65,9 @@ function openPage(pageUrl, openFn, errorFn) {
         start();
 
         process.instance.createPage((page) => {
-          let resourceCount = 0;
-
-          page.set('onResourceRequested', (res) => {
-            if (!res.url.endsWith('.js')) {
-              return;
-            }
-            resourceCount++;
-          });
-          page.set('onResourceReceived', (res) => {
-            if (!res.url.endsWith('.js') || res.stage != 'end') {
-              return;
-            }
-            resourceCount--;
-            if (resourceCount === 0) {
-              openFn(page);
-              finish();
-            }
+          page.set('onLoadFinished', () => {
+            openFn(page, processIdx);
+            finish();
           });
           page.set('onResourceError', (resourceError) => {
             console.log('Unable to load resource', resourceError.url);
@@ -90,10 +75,9 @@ function openPage(pageUrl, openFn, errorFn) {
             console.log(`Error code: ${resourceError.errorCode}. Description: ${resourceError.errorString}`);
           });
           page.set('onError', (msg) => {
-            errorFn({ msg });
+            errorFn({ msg }, processIdx);
             finish();
           });
-
           page.open(pageUrl);
         });
       });
