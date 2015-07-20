@@ -46,6 +46,7 @@ function openPage(pageUrl, openFn, errorFn) {
         function start() {
           if (config.debug) {
             console.log('Running page with process', processIdx);
+            console.time('run' + processIdx);
           }
           process.active = true;
         }
@@ -54,6 +55,7 @@ function openPage(pageUrl, openFn, errorFn) {
           if (!finished) {
             if (config.debug) {
               console.log('Finishing page with process', processIdx);
+              console.timeEnd('run' + processIdx);
             }
             process.active = false;
             finished = true;

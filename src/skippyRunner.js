@@ -26,11 +26,21 @@ function doRun(testFile) {
     phantomPool.openPage(
       'http://localhost:' + config.httpServerPort + '/' + runnerFileName,
       (page) => {
+        console.time('page.evaluate');
         page.evaluate(() => {
           //noinspection JSUnresolvedVariable
-          return { coverage: __coverage__, testResults: __testResults__ };
+          let coverage = __coverage__, stmtCoverage = {};
+          for (let file in coverage) {
+            let statements = [];
+            for (let key in coverage[file].s) {
+              statements.push(coverage[file].s[key]);
+            }
+            stmtCoverage[file] = statements.join('|');
+          }
+          return { stmtCoverage: stmtCoverage, testResults: __testResults__ };
         }, (result) => {
-          resolve({ testFile, coverage: result.coverage, testResults: result.testResults });
+          console.timeEnd('page.evaluate');
+          resolve({ testFile, stmtCoverage: result.stmtCoverage, testResults: result.testResults });
         });
       },
       (error) => {
@@ -62,30 +72,32 @@ function getSrcTestMapping() {
     Promise.all(promises).then((result) => {
       if (config.debug) {
         console.log('Diffing coverage reports...');
+        console.time('diff');
       }
 
-      let noTestCoverage = _.find(result, 'testFile', NO_TEST).coverage;
+      let noTestCoverage = _.find(result, 'testFile', NO_TEST).stmtCoverage;
       let mapping = {};
 
       for (let testFile of config.testFiles) {
-        let testCoverage = _.find(result, 'testFile', testFile).coverage;
+        let testCoverage = _.find(result, 'testFile', testFile).stmtCoverage;
         for (let instrumentedFile in noTestCoverage) {
-          let testStmtCov = testCoverage[instrumentedFile].s;
-          let noTestStmtCov = noTestCoverage[instrumentedFile].s;
-          for (let i in noTestStmtCov) {
-            if (testStmtCov[i] != noTestStmtCov[i]) {
-              if (!mapping[instrumentedFile]) {
-                mapping[instrumentedFile] = [];
-              }
-              mapping[instrumentedFile].push(testFile);
-              break;
+          let testStmtCov = testCoverage[instrumentedFile];
+          let noTestStmtCov = noTestCoverage[instrumentedFile];
+          if (testStmtCov !== noTestStmtCov) {
+            if (!mapping[instrumentedFile]) {
+              mapping[instrumentedFile] = [];
             }
+            mapping[instrumentedFile].push(testFile);
           }
         }
       }
 
-      console.log('Source files and their related tests:');
-      console.log(mapping);
+      if (config.debug) {
+        console.log('Source files and their related tests:');
+        console.log(mapping);
+        console.timeEnd('diff');
+      }
+
       resolve(mapping);
 
     }).catch((error) => {
