@@ -35,7 +35,7 @@ if (args.length == 0) {
  */
 const config = require(process.cwd() + '/' + args[0]);
 
-let srcFiles = glob.sync(config.srcFiles || []);
+const srcFiles = glob.sync(config.srcFiles || []);
 const instrumentFiles = glob.sync(config.instrumentFiles || []);
 const testFiles = glob.sync(config.testFiles || []);
 const staticFiles = glob.sync(config.staticFiles || []); // TODO
@@ -43,13 +43,15 @@ const maxProcesses = config.maxProcesses || 8;
 const preprocessors = config.preprocessors || {};
 const debug = config.debug || false;
 
+srcFiles.unshift('instrumentHelper.js');
+
 if (config.testFramework.startsWith('jasmine')) {
-  srcFiles = [
+  srcFiles.unshift(...[
     'jasmine/' + config.testFramework + '/jasmine.js',
     'jasmine/' + config.testFramework + '/jasmine-html.js',
     'jasmine/' + config.testFramework + '/boot.js',
     'jasmine/' + config.testFramework + '/jasmine-json-reporter.js'
-  ].concat(srcFiles);
+  ]);
 }
 
 

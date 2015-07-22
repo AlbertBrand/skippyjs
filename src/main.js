@@ -18,10 +18,10 @@ bootstrap.cleanTmp();
 
 karmaPreprocessor.process();
 
-instrumenter.writeInstrumented(config.instrumentFiles);
+instrumenter.writeInstrumented([...config.instrumentFiles, ...config.testFiles]);
 
 server.serve();
 
-runner.getSrcTestMapping().then((mapping) => {
-  fileWatcher.start(mapping);
+runner.getSrcTestRelation().then((relatedFiles) => {
+  fileWatcher.start(relatedFiles);
 });

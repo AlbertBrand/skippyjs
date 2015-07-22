@@ -5,16 +5,27 @@ import instrumenter from './instrumenter';
 import runner from './skippyRunner';
 
 
-function start(mapping) {
+function start(relatedFiles) {
+  function getRelatedTestFiles(srcFile) {
+    const relatedTestFiles = [];
+    _.forEach(relatedFiles, (related) => {
+      if (_.includes(related, srcFile)) {
+        let intersection = _.intersection(related, config.testFiles);
+        relatedTestFiles.push(...intersection);
+      }
+    });
+    console.log('relatedTestFiles', relatedTestFiles);
+    return relatedTestFiles;
+   }
+
   function changedFile(file) {
     if (_.includes(config.instrumentFiles, file)) {
       if (config.debug) {
         console.log('Instrumented source file changed');
       }
       instrumenter.writeInstrumented([file]);
-      for (let testFile of mapping[file]) {
-        runner.runTest(testFile);
-      }
+      let relatedTestFiles = getRelatedTestFiles(file);
+      runner.runTests(relatedTestFiles);
 
     } else if (_.includes(config.srcFiles, file)) {
       if (config.debug) {
@@ -26,13 +37,16 @@ function start(mapping) {
       if (config.debug) {
         console.log('Test file changed');
       }
-      runner.runTest(file);
+      instrumenter.writeInstrumented([file]);
+      runner.runTests([file]);
     }
   }
 
   console.log('Watching file changes');
   chokidar.watch([...config.srcFiles, ...config.testFiles]).on('change', changedFile);
 }
+
+
 
 
 export default { start };

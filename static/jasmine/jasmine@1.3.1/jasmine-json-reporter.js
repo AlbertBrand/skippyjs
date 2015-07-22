@@ -1,22 +1,26 @@
 // JSON Reporter for Jasmine 1.3.1
 
+var __relatedFiles__ = [];
 var __testResults__ = [];
 
 jasmine.getEnv().addReporter({
-  reportRunnerStarting: function () {
+  stmtCoverage: null,
 
+  reportRunnerStarting: function () {
+    this.stmtCoverage = getStmtCoverage(__coverage__);
   },
 
   reportRunnerResults: function () {
-
   },
 
   reportSuiteResults: function () {
-
+    var lastStmtCoverage = this.stmtCoverage;
+    this.stmtCoverage = getStmtCoverage(__coverage__);
+    var relatedFiles = getRelatedFiles(lastStmtCoverage, this.stmtCoverage);
+    __relatedFiles__.push(relatedFiles);
   },
 
   reportSpecStarting: function () {
-
   },
 
   reportSpecResults: function (spec) {
