@@ -10,10 +10,17 @@ import config from './config';
 // TODO return promise and wait for processing to be done
 function process() {
   for (let pattern in config.preprocessors) {
-    const info = config.preprocessors[pattern];
+    let info = config.preprocessors[pattern];
+    // shorthand syntax support
+    if (_.isObject(info) && !info.preprocessor) {
+      info = {
+        preprocessor: info
+      }
+    }
+
     let modules = [{
       args: ['value', {}],
-      config: ['value', info.config],
+      config: ['value', info.config || {}],
       logger: ['value', {
         // TODO replace with own logger
         create: () => {
@@ -33,10 +40,11 @@ function process() {
 
     let injector = new di.Injector(modules);
     let preprocess;
+    let name = info.name || Object.keys(info.preprocessor)[0].split(':')[1];
     try {
-      preprocess = injector.get('preprocessor:' + info.name);
+      preprocess = injector.get('preprocessor:' + name);
     } catch (e) {
-      console.log(`Can't load '${info.name}':\n${e.stack}`);
+      console.log(`Can't load '${name}':\n${e.stack}`);
     }
 
     let files = glob.sync(pattern);

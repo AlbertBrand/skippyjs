@@ -81,19 +81,19 @@ Then, setup the preprocessor in your config:
 
     // ... other exports
 
+    import ngHtml2jsPreprocessor from 'karma-ng-html2js-preprocessor';
     import coffeePreprocessor from 'karma-coffee-preprocessor';
-    
+
     export let preprocessors = {
-      '**/*.coffee': {
-        name: 'coffee', // preprocessor name normally specified in karma config
+      '**/*.html': ngHtml2jsPreprocessor, // shorthand, pick first preprocessor from imported object
+      '**/*.coffee': { // full syntax
+        name: 'coffee', // optional alternative preprocessor name from imported object
         preprocessor: coffeePreprocessor,
         config: {
-          // configuration normally specified in karma config
+          // optional configuration normally specified in karma config
         }
       }
     };
-
-Make sure the 'name' property is equal to the exposed preprocessor name.
 
 License
 ---
