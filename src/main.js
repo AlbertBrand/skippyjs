@@ -12,6 +12,8 @@ import karmaPreprocessor from './karmaPreprocessor'
 console.log(colors.bgMagenta.white('SkippyJS'));
 console.log(colors.bgMagenta.white('--------'));
 
+console.time('SkippyJS ready in');
+
 phantomPool.boot();
 
 bootstrap.cleanTmp();
@@ -24,4 +26,5 @@ server.serve();
 
 runner.getSrcTestRelation().then((relatedFiles) => {
   fileWatcher.start(relatedFiles);
+  console.timeEnd('SkippyJS ready in');
 });

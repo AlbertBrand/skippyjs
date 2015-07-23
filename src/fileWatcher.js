@@ -14,7 +14,6 @@ function start(relatedFiles) {
         relatedTestFiles.push(...intersection);
       }
     });
-    console.log('relatedTestFiles', relatedTestFiles);
     return relatedTestFiles;
    }
 

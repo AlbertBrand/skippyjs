@@ -3,6 +3,7 @@ import _ from 'lodash';
 import config from './config';
 import runnerTemplate from './runnerTemplate';
 import phantomPool from './phantomPool';
+import shard from './shard';
 
 
 function doRun(testFiles) {
@@ -12,7 +13,7 @@ function doRun(testFiles) {
     const runnerFileName = runnerTemplate.getRunnerFileName(testFiles.join(' '));
     runnerTemplate.createRunnerFile(scriptFiles, runnerFileName);
 
-    console.log(`Running ${testFiles.length} tests`);
+    console.log(`Running ${testFiles.length} testFiles`);
     phantomPool.openPage(
       'http://localhost:' + config.httpServerPort + '/' + runnerFileName,
       (page, finishFn, processIdx) => {
@@ -62,11 +63,13 @@ function doRun(testFiles) {
 function getSrcTestRelation() {
   return new Promise((resolve) => {
     console.time('getSrcTestRelation');
-    // TODO shard
-    let promises = [doRun(config.testFiles)];
+
+    let promises = _.collect(shard(config.testFiles, config.maxProcesses), (testFiles) => {
+      return doRun(testFiles);
+    });
 
     Promise.all(promises).then((results) => {
-      const relatedFiles = results[0].relatedFiles;
+      let relatedFiles = _.flatten(_.pluck(results, 'relatedFiles'));
       console.log(`Found ${relatedFiles.length} sets of related files`);
 
       if (config.debug) {
