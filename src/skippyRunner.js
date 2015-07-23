@@ -12,19 +12,45 @@ function doRun(testFiles) {
     const runnerFileName = runnerTemplate.getRunnerFileName(testFiles.join(' '));
     runnerTemplate.createRunnerFile(scriptFiles, runnerFileName);
 
-    if (config.debug) {
-      console.log(`Running ${testFiles.length} testfiles`);
-    }
+    console.log(`Running ${testFiles.length} tests`);
     phantomPool.openPage(
       'http://localhost:' + config.httpServerPort + '/' + runnerFileName,
-      (page, processIdx) => {
-        console.time('page.evaluate process ' + processIdx);
-        page.evaluate(() => {
-          return { relatedFiles: __relatedFiles__, testResults: __testResults__ };
-        }, (result) => {
-          console.timeEnd('page.evaluate process ' + processIdx);
-          resolve(result);
-        });
+      (page, finishFn, processIdx) => {
+        let intervalId, ready = false;
+        if (config.debug) {
+          console.time(`[${processIdx}] ready page`);
+        }
+
+        function pageReady() {
+          if (ready) {
+            return;
+          }
+          ready = true;
+          clearInterval(intervalId);
+
+          if (config.debug) {
+            console.timeEnd(`[${processIdx}] ready page`);
+            console.time(`[${processIdx}] retrieve page data`);
+          }
+
+          page.evaluate(() => {
+            return { relatedFiles: __relatedFiles__, testResults: __testResults__ };
+          }, (result) => {
+            if (config.debug) {
+              console.timeEnd(`[${processIdx}] retrieve page data`);
+            }
+            finishFn();
+            resolve(result);
+          });
+        }
+
+        intervalId = setInterval(() => {
+          page.evaluate(() => {
+            return __done__;
+          }, (result) => {
+            result && pageReady();
+          });
+        }, 250);
       },
       (error) => {
         reject(error);
@@ -40,13 +66,15 @@ function getSrcTestRelation() {
     let promises = [doRun(config.testFiles)];
 
     Promise.all(promises).then((results) => {
+      const relatedFiles = results[0].relatedFiles;
+      console.log(`Found ${relatedFiles.length} sets of related files`);
+
       if (config.debug) {
-        console.log('Source files and their related tests:');
-        console.log(results[0].relatedFiles);
+        console.log(relatedFiles);
         console.timeEnd('getSrcTestRelation');
       }
 
-      resolve(results[0].relatedFiles);
+      resolve(relatedFiles);
 
     }).catch((error) => {
       console.log(colors.red('Error during getSrcTestRelation, fix and restart'));

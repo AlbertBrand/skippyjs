@@ -50,7 +50,7 @@ if (config.testFramework.startsWith('jasmine')) {
     'jasmine/' + config.testFramework + '/jasmine.js',
     'jasmine/' + config.testFramework + '/jasmine-html.js',
     'jasmine/' + config.testFramework + '/boot.js',
-    'jasmine/' + config.testFramework + '/jasmine-json-reporter.js'
+    'jasmine/' + config.testFramework + '/jasmineSkippyBridge.js'
   ]);
 }
 

@@ -1,7 +1,8 @@
-// JSON Reporter for Jasmine 1.3.1
+// SkippyJS bridge for Jasmine 1.3.1
 
 var __relatedFiles__ = [];
 var __testResults__ = [];
+var __done__ = false;
 
 jasmine.getEnv().addReporter({
   stmtCoverage: null,
@@ -11,9 +12,13 @@ jasmine.getEnv().addReporter({
   },
 
   reportRunnerResults: function () {
+    __done__ = true;
   },
 
-  reportSuiteResults: function () {
+  reportSuiteResults: function (suite) {
+    if (suite.parentSuite !== null) {
+      return;
+    }
     var lastStmtCoverage = this.stmtCoverage;
     this.stmtCoverage = getStmtCoverage(__coverage__);
     var relatedFiles = getRelatedFiles(lastStmtCoverage, this.stmtCoverage);
@@ -34,19 +39,19 @@ jasmine.getEnv().addReporter({
     for (var j in items) {
       var item = items[j],
         passed = item.passed();
-      testResult[passed ? 'passedExpectations' : 'failedExpectations'].push({
-        actual: item.actual,
-        expected: item.expected,
-        matcherName: item.matcherName,
+      var expectation = {
+        //actual: String(item.actual),
+        //expected: item.expected,
+        //matcherName: item.matcherName,
+        //stack: String(item.trace),
         message: item.message,
-        passed: passed,
-        stack: item.trace.toString()
-      })
+        passed: passed
+      };
+      testResult[passed ? 'passedExpectations' : 'failedExpectations'].push(expectation);
     }
     __testResults__.push(testResult);
   },
 
   log: function () {
-
   }
 });

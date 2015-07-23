@@ -45,8 +45,8 @@ function openPage(pageUrl, openFn, errorFn) {
 
         function start() {
           if (config.debug) {
-            console.log('Running page with process', processIdx);
-            console.time('finish process ' + processIdx);
+            console.log(`[${processIdx}] running page`);
+            console.time(`[${processIdx}] finish page`);
           }
           process.active = true;
         }
@@ -54,7 +54,7 @@ function openPage(pageUrl, openFn, errorFn) {
         function finish() {
           if (!finished) {
             if (config.debug) {
-              console.timeEnd('finish process ' + processIdx);
+              console.timeEnd(`[${processIdx}] finish page`);
             }
             process.active = false;
             finished = true;
@@ -66,8 +66,7 @@ function openPage(pageUrl, openFn, errorFn) {
 
         process.instance.createPage((page) => {
           page.set('onLoadFinished', () => {
-            openFn(page, processIdx);
-            finish();
+            openFn(page, finish, processIdx);
           });
           page.set('onResourceError', (resourceError) => {
             console.log('Unable to load resource', resourceError.url);

@@ -1,4 +1,4 @@
-describe("sqrt", function () {
+describe("Calc", function () {
   it("should subtract b from a", function () {
     expect(Calc.substract(10, 6)).toEqual(4);
   });
