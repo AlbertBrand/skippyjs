@@ -77,6 +77,9 @@ function getSrcTestRelation() {
         console.timeEnd('getSrcTestRelation');
       }
 
+      let testResults = _.flatten(_.pluck(results, 'testResults'));
+      showTestResults(testResults);
+
       resolve(relatedFiles);
 
     }).catch((error) => {
@@ -86,22 +89,22 @@ function getSrcTestRelation() {
   });
 }
 
+function showTestResults(testResults) {
+  console.log(_.all(testResults, 'status', 'passed') ?
+      colors.bgGreen.black(`${testResults.length} tests succeeded`) :
+      colors.bgRed('Tests failed:')
+  );
+
+  _.filter(testResults, 'status', 'failed').forEach((testResult) => {
+    console.log(colors.red(testResult.description));
+    console.log('Failed expectations:');
+    console.log(_.pluck(testResult.failedExpectations, 'message').join('\n'));
+  });
+}
+
 function runTests(testFiles) {
   doRun(testFiles).then((result) => {
-    console.log(_.all(result.testResults, 'status', 'passed') ?
-        colors.bgGreen.black(`Test succeeded: ${testFiles}`) :
-        colors.bgRed(`Test failed: ${testFiles}`)
-    );
-
-    for (let testResult of result.testResults) {
-      if (testResult.status === 'passed') {
-        console.log(colors.green(testResult.description));
-      } else {
-        console.log(colors.red(testResult.description));
-        console.log('Failed expectations:');
-        console.log(_.pluck(testResult.failedExpectations, 'message').join('\n'));
-      }
-    }
+    showTestResults(result.testResults);
 
   }).catch((error) => {
     console.log(colors.red('Error during test run of', testFiles));

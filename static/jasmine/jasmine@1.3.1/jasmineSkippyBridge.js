@@ -31,7 +31,7 @@ jasmine.getEnv().addReporter({
   reportSpecResults: function (spec) {
     var testResult = {
       description: spec.description,
-      status: spec.results().failedCount > 0 ? "failed" : "passed",
+      status: spec.results().failedCount > 0 ? 'failed' : 'passed',
       failedExpectations: [],
       passedExpectations: []
     };
