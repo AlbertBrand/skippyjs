@@ -1,0 +1,107 @@
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "description": "should sum",
+              "failedExpectations": [
+                {
+                  "actual": 4,
+                  "expected": 3,
+                  "matcherName": "toBe",
+                  "message": "Expected 4 to be 3.",
+                  "passed": false,
+                  "stack": "Error: Expected 4 to be 3."
+                }
+              ],
+              "fullName": "My inner suite should sum",
+              "id": "spec5",
+              "passedExpectations": [],
+              "pendingReason": "",
+              "status": "failed"
+            },
+            {
+              "description": "should not sum incorrectly",
+              "failedExpectations": [
+                {
+                  "actual": 4,
+                  "expected": 4,
+                  "matcherName": "toBe",
+                  "message": "Expected 4 not to be 4.",
+                  "passed": false,
+                  "stack": "Error: Expected 4 not to be 4."
+                }
+              ],
+              "fullName": "My inner suite should not sum incorrectly",
+              "id": "spec6",
+              "passedExpectations": [],
+              "pendingReason": "",
+              "status": "failed"
+            }
+          ],
+          "description": "inner suite",
+          "failedExpectations": [],
+          "fullName": "My inner suite",
+          "id": "suite3",
+          "status": "finished"
+        }
+      ],
+      "description": "My",
+      "failedExpectations": [],
+      "fullName": "My",
+      "id": "suite2",
+      "status": "finished"
+    },
+    {
+      "children": [
+        {
+          "description": "should divide 100 by 10 and add 10",
+          "failedExpectations": [
+            {
+              "actual": 21,
+              "expected": 20,
+              "matcherName": "toEqual",
+              "message": "Expected 21 to equal 20.",
+              "passed": false,
+              "stack": "Error: Expected 21 to equal 20."
+            }
+          ],
+          "fullName": "integration of My and Calc should divide 100 by 10 and add 10",
+          "id": "spec7",
+          "passedExpectations": [],
+          "pendingReason": "",
+          "status": "failed"
+        },
+        {
+          "description": "should compute square root of 10 and divide by 2",
+          "failedExpectations": [
+            {
+              "actual": 4.2,
+              "expected": 4,
+              "matcherName": "toBe",
+              "message": "Expected 4.2 to be 4.",
+              "passed": false,
+              "stack": "Error: Expected 4.2 to be 4."
+            }
+          ],
+          "fullName": "integration of My and Calc should compute square root of 10 and divide by 2",
+          "id": "spec8",
+          "passedExpectations": [],
+          "pendingReason": "",
+          "status": "failed"
+        }
+      ],
+      "description": "integration of My and Calc",
+      "failedExpectations": [],
+      "fullName": "integration of My and Calc",
+      "id": "suite4",
+      "status": "finished"
+    }
+  ],
+  "description": "Jasmine__TopLevel__Suite",
+  "failedExpectations": [],
+  "fullName": "Jasmine__TopLevel__Suite",
+  "id": "suite0"
+}

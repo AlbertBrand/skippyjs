@@ -1,9 +1,10 @@
 import colors from 'colors/safe';
-import _ from 'lodash';
+import _ from 'lodash-contrib';
 import config from './config';
 import runnerTemplate from './runnerTemplate';
 import phantomPool from './phantomPool';
 import shard from './shard';
+import testViewer from './testViewer';
 
 
 function doRun(testFiles) {
@@ -77,34 +78,27 @@ function getSrcTestRelation() {
         console.timeEnd('getSrcTestRelation');
       }
 
-      let testResults = _.flatten(_.pluck(results, 'testResults'));
-      showTestResults(testResults);
+      const testResults = _.reduce(_.pluck(results, 'testResults'), (acc, val) => {
+        return _.extend(acc, val, (a, b) => {
+          return _.isArray(b) ? b.concat(a) : b;
+        });
+      });
+
+      testViewer.showTestResults(testResults);
 
       resolve(relatedFiles);
 
     }).catch((error) => {
       console.log(colors.red('Error during getSrcTestRelation, fix and restart'));
-      console.log(colors.red(error.msg));
+      console.log(colors.red(error));
     });
   });
 }
 
-function showTestResults(testResults) {
-  console.log(_.all(testResults, 'status', 'passed') ?
-      colors.bgGreen.black(`${testResults.length} tests succeeded`) :
-      colors.bgRed('Tests failed:')
-  );
-
-  _.filter(testResults, 'status', 'failed').forEach((testResult) => {
-    console.log(colors.red(testResult.description));
-    console.log('Failed expectations:');
-    console.log(_.pluck(testResult.failedExpectations, 'message').join('\n'));
-  });
-}
-
 function runTests(testFiles) {
+  // TODO shard
   doRun(testFiles).then((result) => {
-    showTestResults(result.testResults);
+    testViewer.showTestResults(result.testResults);
 
   }).catch((error) => {
     console.log(colors.red('Error during test run of', testFiles));

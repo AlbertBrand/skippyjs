@@ -1,7 +1,7 @@
 // SkippyJS bridge for Jasmine 2.3.4
 
 var __relatedFiles__ = [];
-var __testResults__ = [];
+var __testResults__ = {};
 var __done__ = false;
 
 function isTopSuiteChild(suiteId) {
@@ -14,6 +14,21 @@ function isTopSuiteChild(suiteId) {
   return false;
 }
 
+function getTestResults(node) {
+  var testResult = node.result,
+    childResults = [];
+
+  for (var i in node.children) {
+    var child = node.children[i];
+    childResults.push(getTestResults(child));
+  }
+  if (childResults.length) {
+    testResult.children = childResults;
+  }
+
+  return testResult;
+}
+
 jasmine.getEnv().addReporter({
   stmtCoverage: null,
 
@@ -22,6 +37,7 @@ jasmine.getEnv().addReporter({
   },
 
   jasmineDone: function () {
+    __testResults__ = getTestResults(jasmine.getEnv().topSuite());
     __done__ = true;
   },
 
@@ -41,7 +57,6 @@ jasmine.getEnv().addReporter({
   specStarted: function () {
   },
 
-  specDone: function (spec) {
-    __testResults__.push(spec);
+  specDone: function () {
   }
 });

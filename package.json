@@ -15,10 +15,21 @@
     "glob-all": "^3.0.1",
     "istanbul": "^0.3.14",
     "lodash": "^3.10.0",
+    "lodash-contrib": "^393.0.1",
     "mkdirp": "^0.5.1",
     "phantom": "^0.7.2",
     "phantomjs": "^1.9.17",
     "promise-queue": "^2.1.1",
     "serve-static": "^1.9.3"
+  },
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*"
+  },
+  "scripts": {
+    "test": "babel-node -r node_modules/.bin/_mocha $npm_package_config_MOCHA_OPTS"
+  },
+  "config": {
+    "MOCHA_OPTS": "test/ --recursive"
   }
 }
