@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
-require('babel/register');
-var mainPath = require('path').resolve(__dirname, '../src/main');
-module.exports = require(mainPath);
+var configFile = process.argv.slice(2);
+
+require('babel/register')({
+  only: new RegExp('skippyjs\/src|' + configFile)
+});
+
+module.exports = require(require('path').resolve(__dirname, '../src/main'));
