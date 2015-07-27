@@ -1,26 +1,41 @@
 {
   "name": "skippyjs",
-  "version": "1.0.0",
-  "description": "",
-  "author": "",
+  "version": "0.1.1",
+  "description": "SkippyJS, the faster test runner",
+  "author": {
+    "name": "Albert Brand",
+    "email": "abrand@xebia.com"
+  },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlbertBrand/skippyjs.git"
+  },
+  "keywords": [
+    "fast",
+    "test runner",
+    "test tool",
+    "jasmine",
+    "phantomjs",
+    "multiprocess"
+  ],
   "dependencies": {
-    "babel": "^5.6.11",
-    "chokidar": "^1.0.3",
-    "colors": "^1.1.2",
+    "babel": "5.6.*",
+    "chokidar": "1.0.*",
+    "colors": "1.1.*",
     "di": "0.0.1",
-    "es6-template-strings": "^1.0.0",
-    "finalhandler": "^0.3.6",
-    "fs-extra": "^0.18.3",
-    "glob-all": "^3.0.1",
-    "istanbul": "^0.3.14",
-    "lodash": "^3.10.0",
-    "lodash-contrib": "^393.0.1",
-    "mkdirp": "^0.5.1",
-    "phantom": "^0.7.2",
-    "phantomjs": "^1.9.17",
-    "promise-queue": "^2.1.1",
-    "serve-static": "^1.9.3"
+    "es6-template-strings": "1.0.*",
+    "finalhandler": "0.3.*",
+    "fs-extra": "0.18.*",
+    "glob-all": "3.0.*",
+    "istanbul": "0.3.*",
+    "lodash": "3.10.*",
+    "lodash-contrib": "393.0.*",
+    "mkdirp": "0.5.*",
+    "phantom": "0.7.*",
+    "phantomjs": "1.9.*",
+    "promise-queue": "2.1.*",
+    "serve-static": "1.9.*"
   },
   "devDependencies": {
     "chai": "*",
