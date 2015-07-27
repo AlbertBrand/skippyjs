@@ -8,8 +8,10 @@ import phantomPool from './phantomPool';
 import fileWatcher from './fileWatcher';
 import karmaPreprocessor from './karmaPreprocessor'
 
-
-console.log(colors.bgMagenta.white('SkippyJS'));
+console.log(colors.bgMagenta.white('╔═╗┬┌─┬┌─┐┌─┐┬ ┬╦╔═╗'));
+console.log(colors.bgMagenta.white('╚═╗├┴┐│├─┘├─┘└┬┘║╚═╗'));
+console.log(colors.bgMagenta.white('╚═╝┴ ┴┴┴  ┴   ┴╚╝╚═╝'));
+console.log('')
 console.log(colors.bgMagenta.white('--------'));
 
 console.time('SkippyJS ready in');
