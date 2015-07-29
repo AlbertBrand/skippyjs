@@ -82,7 +82,7 @@ jasmine.getEnv().addReporter({
   reportSpecStarting: function () {
   },
 
-  reportSpecResults: function (spec) {
+  reportSpecResults: function () {
   },
 
   log: function () {

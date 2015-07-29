@@ -21,6 +21,13 @@ It features:
 
     ./node_modules/skippyjs/bin/skippyjs mySkippyConfig.js
 
+  - Options:
+
+  
+    -h, --help        output usage information
+    -V, --version     output the version number
+    -r, --single-run  only perform single test run
+
 
 ## Configuration
 
@@ -150,6 +157,7 @@ Make sure to include the preprocessed files in your src files:
   - console.log output of tests
   - remove dependency on test framework, configure your own
   - js-reporters output
+  - coverage output
   - improve console/file logging
   - warn when src/testFiles are included that do not exist
   - preprocess instrumented files

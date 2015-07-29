@@ -37,10 +37,8 @@ function doShow(testResults, depth) {
     prefixMsg = getPrefix(depth + 2);
 
   _.forEach(testResults, (testResult) => {
-    if (testResult.status !== 'failed') {
-      console.log(prefix + testResult.description);
-    } else {
-      console.log(prefix + testResult.description);
+    console.log(prefix + testResult.description);
+    if (testResult.status === 'failed') {
       console.log(prefixMsg + colors.red(_.pluck(testResult.failedExpectations, 'message').join('\n' + prefixMsg)));
     }
     if (testResult.children) {

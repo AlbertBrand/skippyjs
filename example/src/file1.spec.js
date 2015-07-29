@@ -7,6 +7,10 @@ describe("My", function () {
     expect(My.sqrt(2)).not.toEqual(2);
   });
 
+  it("should do something with the DOM", function () {
+    expect(document.body).not.toBe(document.head);
+  });
+
   describe("inner suite", function () {
     it("should sum", function () {
       expect(My.sum(1, 2)).toBe(3);

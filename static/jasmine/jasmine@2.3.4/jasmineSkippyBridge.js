@@ -14,9 +14,23 @@ function isTopSuiteChild(suiteId) {
   return false;
 }
 
+function cleanExpectations(expectations) {
+  var cleaned = [];
+  for (var i in expectations) {
+    cleaned.push({
+      message: expectations[i].message,
+      passed: expectations[i].passed
+    });
+  }
+  return cleaned;
+}
+
 function getTestResults(node) {
   var testResult = node.result,
     childResults = [];
+
+  testResult.failedExpectations = cleanExpectations(testResult.failedExpectations);
+  testResult.passedExpectations = cleanExpectations(testResult.passedExpectations);
 
   for (var i in node.children) {
     var child = node.children[i];

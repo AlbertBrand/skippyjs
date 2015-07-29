@@ -7,7 +7,7 @@ program
   .description(packageJson.description)
   .version(packageJson.version)
   .usage('[options] <config file>')
-  .option('-r, --single-run', 'only perform single testrun')
+  .option('-r, --single-run', 'only perform single test run')
   .parse(process.argv);
 
 var options = {
