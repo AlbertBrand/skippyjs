@@ -21,9 +21,10 @@ It features:
 
     ./node_modules/skippyjs/bin/skippyjs mySkippyConfig.js
 
-  - Options:
 
-  
+The following options are supported:
+
+
     -h, --help        output usage information
     -V, --version     output the version number
     -r, --single-run  only perform single test run
