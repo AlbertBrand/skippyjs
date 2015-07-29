@@ -12,7 +12,7 @@ let queue;
 function createPhantomProcess() {
   return new Promise((resolve) => {
     phantom.create({
-      binary: path.resolve(__dirname, '../node_modules/phantomjs/bin/phantomjs')
+      binary: path.resolve(__dirname, '../node_modules/phantomjs2/bin/phantomjs')
     }, (instance) => {
       resolve({
         instance: instance,

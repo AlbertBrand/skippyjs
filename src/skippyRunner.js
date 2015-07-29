@@ -83,7 +83,7 @@ function doShardedTestRun(testFiles) {
 
     }).catch((error) => {
       console.log(colors.red('Error during sharded test run'));
-      console.log(colors.red(error));
+      console.log(colors.red(error.msg || error));
     });
   });
 }
