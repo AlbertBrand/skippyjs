@@ -1,6 +1,6 @@
 {
   "name": "skippyjs",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "SkippyJS, the faster test runner",
   "author": {
     "name": "Albert Brand",
@@ -23,7 +23,7 @@
     "babel": "5.8.*",
     "chokidar": "1.0.*",
     "colors": "1.1.*",
-    "command-line-args": "0.5.*",
+    "commander": "2.8.*",
     "di": "0.0.1",
     "es6-template-strings": "1.0.*",
     "finalhandler": "0.4.*",
