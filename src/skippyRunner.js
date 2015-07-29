@@ -14,7 +14,6 @@ function doRun(testFiles) {
     const runnerFileName = runnerTemplate.getRunnerFileName(testFiles.join(' '));
     runnerTemplate.createRunnerFile(scriptFiles, runnerFileName);
 
-    console.log(`Running ${testFiles.length} testFiles`);
     phantomPool.openPage(
       'http://localhost:' + config.httpServerPort + '/' + runnerFileName,
       (page, finishFn, processIdx) => {
@@ -61,54 +60,52 @@ function doRun(testFiles) {
   });
 }
 
-function getSrcTestRelation() {
+function doShardedTestRun(testFiles) {
   return new Promise((resolve) => {
-    console.time('getSrcTestRelation');
+    console.time('doShardedRun');
+    console.log(`Running ${testFiles.length} testFiles`);
 
-    let promises = _.collect(shard(config.testFiles, config.maxProcesses), (testFiles) => {
-      return doRun(testFiles);
+    let promises = _.collect(shard(testFiles, config.maxProcesses), (testFilesShard) => {
+      return doRun(testFilesShard);
     });
 
     Promise.all(promises).then((results) => {
-      let relatedFiles = _.flatten(_.pluck(results, 'relatedFiles'));
-      console.log(`Found ${relatedFiles.length} sets of related files`);
-
       if (config.debug) {
-        console.log(relatedFiles);
-        console.timeEnd('getSrcTestRelation');
+        console.timeEnd('doShardedRun');
       }
 
-      const testResults = _.reduce(_.pluck(results, 'testResults'), (acc, val) => {
-        return _.extend(acc, val, (a, b) => {
-          return _.isArray(b) ? b.concat(a) : b;
-        });
-      });
+      const relatedFiles = _.flatten(_.pluck(results, 'relatedFiles'));
 
-      testViewer.showTestResults(testResults);
+      const testResults = _.clone(results[0].testResults);
+      testResults.children = _.flatten(_.pluck(_.pluck(results, 'testResults'), 'children'));
 
-      resolve(relatedFiles);
+      resolve({ testResults, relatedFiles });
 
     }).catch((error) => {
-      console.log(colors.red('Error during getSrcTestRelation, fix and restart'));
+      console.log(colors.red('Error during sharded test run'));
       console.log(colors.red(error));
     });
   });
 }
 
-function runTests(testFiles) {
-  // TODO shard
-  doRun(testFiles).then((result) => {
-    testViewer.showTestResults(result.testResults);
+function getSrcTestRelation() {
+  return doShardedTestRun(config.testFiles).then(({testResults, relatedFiles}) => {
+    console.log(`Found ${relatedFiles.length} sets of related files`);
+    if (config.debug) {
+      console.log(relatedFiles);
+    }
 
-  }).catch((error) => {
-    console.log(colors.red('Error during test run of', testFiles));
-    console.log(colors.red(error.msg));
+    testViewer.showTestResults(testResults);
+    return relatedFiles;
   });
 }
 
-function close() {
-  phantomPool.close();
+function runTests(testFiles) {
+  return doShardedTestRun(testFiles).then(({testResults}) => {
+    testViewer.showTestResults(testResults);
+    return testResults;
+  });
 }
 
 
-export default { getSrcTestRelation, runTests, close }
+export default { getSrcTestRelation, runTests }

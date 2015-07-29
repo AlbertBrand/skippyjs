@@ -1,6 +1,9 @@
 import path from 'path';
 import glob from 'glob-all';
 import colors from 'colors';
+import fs from 'fs-extra';
+import cli from './cli';
+
 
 // internal settings
 const root = path.resolve(__dirname, '..') + '/';
@@ -15,25 +18,37 @@ const generatedPath = tmpPath + 'generated/';
 const httpServerPort = 3000;
 
 // initialise dynamic settings via commandline config file
-const args = process.argv.slice(2);
-if (args.length == 0) {
-  console.log(colors.red('No path provided to skippy config'));
+if (!cli.options.configFile) {
+  cli.program.outputHelp();
+  process.exit(1);
+}
+
+const configFile = process.cwd() + '/' + cli.options.configFile;
+if (!fs.existsSync(configFile)) {
+  console.log(colors.red('Config file does not exist'));
   process.exit(1);
 }
 
 /**
  * @type {{
- *  testFramework,
- *  srcFiles,
- *  instrumentFiles,
- *  testFiles,
- *  staticFiles,
- *  maxProcesses,
- *  preprocessors,
- *  debug
- * }}
+   *  testFramework,
+   *  srcFiles,
+   *  instrumentFiles,
+   *  testFiles,
+   *  staticFiles,
+   *  maxProcesses,
+   *  preprocessors,
+   *  debug
+   * }}
  */
-const config = require(process.cwd() + '/' + args[0]);
+let config;
+try {
+  config = require(configFile);
+} catch (e) {
+  console.log(colors.red('Config file contains errors:'));
+  console.log(e.message);
+  process.exit(1);
+}
 
 const srcFiles = glob.sync(config.srcFiles || []);
 const instrumentFiles = glob.sync(config.instrumentFiles || []);

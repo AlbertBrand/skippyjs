@@ -1,15 +1,7 @@
 import colors from 'colors/safe';
-import _ from 'lodash-contrib';
+import _ from 'lodash';
+import helper from './testHelper';
 
-const testWalker = _.walk((node) => {
-  return node && node.children;
-});
-
-function hasFailedTests(testResults) {
-  return !!testWalker.find(testResults, (node) => {
-    return node.status === 'failed';
-  });
-}
 
 function getFailedTestResults(testResults) {
   testResults = _.cloneDeep(testResults);
@@ -17,7 +9,7 @@ function getFailedTestResults(testResults) {
   let didRemove;
   do {
     didRemove = false;
-    testWalker.preorder(testResults, (node, key, parent) => {
+    helper.testWalker.preorder(testResults, (node, key, parent) => {
       if (!node) {
         return;
       }
@@ -48,19 +40,19 @@ function doShow(testResults, depth) {
     if (testResult.status !== 'failed') {
       console.log(prefix + testResult.description);
     } else {
-      console.log(prefix + colors.red(testResult.description));
-      console.log(prefixMsg + _.pluck(testResult.failedExpectations, 'message').join('\n' + prefixMsg));
+      console.log(prefix + testResult.description);
+      console.log(prefixMsg + colors.red(_.pluck(testResult.failedExpectations, 'message').join('\n' + prefixMsg)));
     }
     if (testResult.children) {
       depth += 2;
-      doShow(testResult.children, depth)
+      doShow(testResult.children, depth);
       depth -= 2;
     }
   });
 }
 
 function showTestResults(testResults) {
-  if (hasFailedTests(testResults)) {
+  if (helper.hasFailedTests(testResults)) {
     console.log(colors.bgRed('Tests failed:'));
     doShow(getFailedTestResults(testResults).children, 0);
 
@@ -70,4 +62,4 @@ function showTestResults(testResults) {
 }
 
 
-export default { hasFailedTests, getFailedTestResults, showTestResults }
+export default { getFailedTestResults, showTestResults }
