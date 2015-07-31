@@ -7,12 +7,18 @@ program
   .description(packageJson.description)
   .version(packageJson.version)
   .usage('[options] <config file>')
-  .option('-r, --single-run', 'only perform single test run')
+  .option('-r, --run-once', 'only perform one test run, do not watch file changes')
+  .option('-s, --store-coverage', 'store coverage JSON after determining related files')
+  .option('--verbose', 'verbose output')
   .parse(process.argv);
 
-var options = {
-  singleRun: program['singleRun'],
+//noinspection JSUnresolvedVariable
+var config = {
+  runOnce: program.runOnce,
+  storeCoverage: program.storeCoverage,
+  verbose: program.verbose,
   configFile: program.args[0]
 };
 
-module.exports = { options: options, program: program };
+
+module.exports = { config: config, program: program };

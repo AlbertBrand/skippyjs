@@ -26,9 +26,11 @@ Run skippyJS:
 The following options are supported:
 
 
-    -h, --help        output usage information
-    -V, --version     output the version number
-    -r, --single-run  only perform single test run
+    -h, --help            output usage information
+    -V, --version         output the version number
+    -r, --run-once        only perform one test run, do not watch file changes
+    -s, --store-coverage  store coverage JSON after determining related files
+    --verbose             verbose output
 
 
 ## Configuration
@@ -62,20 +64,32 @@ The skippy config file can be written with ES6 (ES2015) or ES5 syntax, ES6 is pr
     // Unsupported yet.
     export let staticFiles = [];
     
-    // Optionally override the number of Phantom processes used to run tests. Default is 8. 
+    // Override the number of Phantom processes used to run tests. Default is 8. 
     export let maxProcesses = 4;
-    
-    // Optionally enable debugging output. Turning it on may cause some degraded perf. 
-    // Default is false.
-    export let debug = true;
 
     // Optionally define preprocessors for your src files. 
     // See 'Preprocessor setup' for more details.
     export let preprocessors = {};
     
-    // Optionally store the JS coverage after related files have been determined. It causes a 
-    // slight perf hit as retrieving it from Phantom is slow. Default is false.
+    // Override the temp path for storing processed files and coverage. Defaults to
+    // <app root>/node_modules/skippyjs/.tmp
+    export let tmpPath = '.tmp/';
+
+    // Override the port for the HTTP server that hosts files for Phantom. Defaults to 3000.
+    export let httpServerPort = 3001;
+
+    // Only perform one test run. Exists with status code 1 if any test failed. Can also be
+    // set with --run-once flag. Defaults to false.
+    export let runOnce = true;
+
+    // Store the JS coverage after related files have been determined. It causes a 
+    // slight perf hit as retrieving it from Phantom is slow. Can also be set with 
+    // --store-coverage flag. Default is false.
     export let storeCoverage = true;
+
+    // Enable more verbose output. Turning it on may cause some degraded perf. Can also be
+    // set with --verbose flag. Default is false.
+    export let verbose = true;
 
 
 ## Example

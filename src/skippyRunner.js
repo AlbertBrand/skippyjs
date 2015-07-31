@@ -4,7 +4,6 @@ import config from './config';
 import runnerTemplate from './runnerTemplate';
 import phantomPool from './phantomPool';
 import shard from './shard';
-import testViewer from './testViewer';
 import instrumenter from './instrumenter';
 
 
@@ -19,7 +18,7 @@ function doRun(testFiles, storeCoverage) {
       'http://localhost:' + config.httpServerPort + '/' + runnerFileName,
       (page, finishFn, processIdx) => {
         let intervalId, ready = false;
-        if (config.debug) {
+        if (config.verbose) {
           console.time(`[${processIdx}] ready page`);
         }
 
@@ -30,7 +29,7 @@ function doRun(testFiles, storeCoverage) {
           ready = true;
           clearInterval(intervalId);
 
-          if (config.debug) {
+          if (config.verbose) {
             console.timeEnd(`[${processIdx}] ready page`);
             console.time(`[${processIdx}] retrieve page data`);
           }
@@ -51,7 +50,7 @@ function doRun(testFiles, storeCoverage) {
           };
 
           page.evaluate(evalFn, (result) => {
-            if (config.debug) {
+            if (config.verbose) {
               console.timeEnd(`[${processIdx}] retrieve page data`);
             }
             finishFn();
@@ -74,9 +73,9 @@ function doRun(testFiles, storeCoverage) {
   });
 }
 
-function doShardedTestRun(testFiles, storeCoverage) {
+function runTests(testFiles, storeCoverage) {
   return new Promise((resolve) => {
-    console.time('doShardedRun');
+    console.time('runTests');
     console.log(`Running ${testFiles.length} testFiles`);
 
     let promises = _.collect(shard(testFiles, config.maxProcesses), (testFilesShard) => {
@@ -84,8 +83,8 @@ function doShardedTestRun(testFiles, storeCoverage) {
     });
 
     Promise.all(promises).then((results) => {
-      if (config.debug) {
-        console.timeEnd('doShardedRun');
+      if (config.verbose) {
+        console.timeEnd('runTests');
       }
 
       const relatedFiles = _.flatten(_.pluck(results, 'relatedFiles'));
@@ -93,12 +92,9 @@ function doShardedTestRun(testFiles, storeCoverage) {
       const testResults = _.clone(results[0].testResults);
       testResults.children = _.flatten(_.pluck(_.pluck(results, 'testResults'), 'children'));
 
-      if (storeCoverage) {
-        const coverages = _.pluck(results, 'coverage');
-        instrumenter.writeCombinedCoverage(coverages);
-      }
+      const coverage = storeCoverage ? instrumenter.combine(_.pluck(results, 'coverage')) : null;
 
-      resolve({ testResults, relatedFiles });
+      resolve({ testResults, relatedFiles, coverage });
 
     }).catch((error) => {
       console.log(colors.red('Error during sharded test run'));
@@ -107,25 +103,5 @@ function doShardedTestRun(testFiles, storeCoverage) {
   });
 }
 
-function getSrcTestRelation() {
-  return doShardedTestRun(config.testFiles, config.storeCoverage)
-    .then(({testResults, relatedFiles}) => {
-      console.log(`Found ${relatedFiles.length} sets of related files`);
-      if (config.debug) {
-        console.log(relatedFiles);
-      }
 
-      testViewer.showTestResults(testResults);
-      return relatedFiles;
-    });
-}
-
-function runTests(testFiles) {
-  return doShardedTestRun(testFiles).then(({testResults}) => {
-    testViewer.showTestResults(testResults);
-    return testResults;
-  });
-}
-
-
-export default { getSrcTestRelation, runTests }
+export default { runTests }

@@ -29,7 +29,7 @@ function boot() {
   }))
     .then((result) => {
       processes = result;
-      if (config.debug) {
+      if (config.verbose) {
         console.log(`${config.maxProcesses} instances of Phantom started`);
       }
     });
@@ -44,7 +44,7 @@ function openPage(pageUrl, openFn, errorFn) {
           finished = false;
 
         function start() {
-          if (config.debug) {
+          if (config.verbose) {
             console.log(`[${processIdx}] running page`);
             console.time(`[${processIdx}] finish page`);
           }
@@ -53,7 +53,7 @@ function openPage(pageUrl, openFn, errorFn) {
 
         function finish() {
           if (!finished) {
-            if (config.debug) {
+            if (config.verbose) {
               console.timeEnd(`[${processIdx}] finish page`);
             }
             process.active = false;

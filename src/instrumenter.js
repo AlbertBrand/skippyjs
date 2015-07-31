@@ -16,7 +16,7 @@ function writeInstrumented(filePaths) {
       const instrumentedCode = instrumenter.instrumentSync(code, filePath);
       mkdirp.sync(config.generatedPath + path.parse(filePath).dir);
       fs.writeFileSync(config.generatedPath + filePath, instrumentedCode);
-      if (config.debug) {
+      if (config.verbose) {
         console.log('Instrumented', filePath);
       }
     } catch (error) {
@@ -26,18 +26,22 @@ function writeInstrumented(filePaths) {
   console.log(`Instrumented ${filePaths.length} files`);
 }
 
-function writeCombinedCoverage(coverages) {
+function combine(coverages) {
   for (let coverage of coverages) {
     collector.add(coverage);
   }
-  const finalCoverage = collector.getFinalCoverage();
+  const combinedCoverage = collector.getFinalCoverage();
   collector.dispose();
+  return combinedCoverage;
+}
+
+function writeCoverage(coverage) {
   var coveragePath = config.coveragePath + 'coverage.json';
-  fs.writeFileSync(coveragePath, JSON.stringify(finalCoverage, null, 2));
-  if (config.debug) {
+  fs.writeFileSync(coveragePath, JSON.stringify(coverage, null, 2));
+  if (config.verbose) {
     console.log('Written', coveragePath);
   }
 }
 
 
-export default { writeInstrumented, writeCombinedCoverage }
+export default { writeInstrumented, combine, writeCoverage }

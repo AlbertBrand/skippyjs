@@ -16,5 +16,3 @@ export let testFiles = [
 export let staticFiles = [];
 
 export let maxProcesses = 4;
-
-export let debug = false;

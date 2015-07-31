@@ -19,7 +19,7 @@ function start(relatedFiles) {
 
   function changedFile(file) {
     if (_.includes(config.instrumentFiles, file)) {
-      if (config.debug) {
+      if (config.verbose) {
         console.log('Instrumented source file changed');
       }
       instrumenter.writeInstrumented([file]);
@@ -27,13 +27,13 @@ function start(relatedFiles) {
       runner.runTests(relatedTestFiles);
 
     } else if (_.includes(config.srcFiles, file)) {
-      if (config.debug) {
+      if (config.verbose) {
         console.log('Non-instrumented source file changed');
       }
       // TODO decide what to do here
 
     } else if (_.includes(config.testFiles, file)) {
-      if (config.debug) {
+      if (config.verbose) {
         console.log('Test file changed');
       }
       instrumenter.writeInstrumented([file]);
@@ -44,8 +44,6 @@ function start(relatedFiles) {
   console.log('Watching file changes');
   chokidar.watch([...config.srcFiles, ...config.testFiles]).on('change', changedFile);
 }
-
-
 
 
 export default { start };

@@ -55,7 +55,7 @@ function process() {
       preprocess(buffer.toString(), {
         originalPath: file
       }, (processed) => {
-        if (config.debug) {
+        if (config.verbose) {
           console.log('writing', destPath)
         }
         fs.writeFileSync(destPath, processed);
