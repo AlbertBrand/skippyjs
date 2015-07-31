@@ -19,6 +19,9 @@
     "phantomjs",
     "multiprocess"
   ],
+  "bin": {
+    "skippyjs": "./bin/skippyjs"
+  },
   "dependencies": {
     "babel": "5.8.*",
     "chokidar": "1.0.*",
