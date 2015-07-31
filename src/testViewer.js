@@ -3,6 +3,8 @@ import _ from 'lodash';
 import helper from './testHelper';
 
 
+// TODO lodash-contrib overrides _.repeat and maybe others, so kill lodash-contrib
+
 function getFailedTestResults(testResults) {
   testResults = _.cloneDeep(testResults);
 
@@ -23,18 +25,9 @@ function getFailedTestResults(testResults) {
   return testResults;
 }
 
-// TODO lodash-contrib overrides _.repeat, so kill lodash-contrib
-function getPrefix(depth) {
-  let prefix = '';
-  for (var i = 0; i < depth; i++) {
-    prefix += ' ';
-  }
-  return prefix;
-}
-
 function doShow(testResults, depth) {
-  let prefix = getPrefix(depth),
-    prefixMsg = getPrefix(depth + 2);
+  let prefix = ' '.repeat(depth),
+    prefixMsg = ' '.repeat(depth + 2);
 
   _.forEach(testResults, (testResult) => {
     console.log(prefix + testResult.description);
@@ -55,7 +48,7 @@ function showTestResults(testResults) {
     doShow(getFailedTestResults(testResults).children, 0);
 
   } else {
-    console.log(colors.bgGreen.black(`All test suites succeeded`));
+    console.log(colors.bgGreen.black(`${testResults.children.length} test suites succeeded`));
   }
 }
 
