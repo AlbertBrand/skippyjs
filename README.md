@@ -72,6 +72,10 @@ The skippy config file can be written with ES6 (ES2015) or ES5 syntax, ES6 is pr
     // See 'Preprocessor setup' for more details.
     export let preprocessors = {};
     
+    // Optionally store the JS coverage after related files have been determined. It causes a 
+    // slight perf hit as retrieving it from Phantom is slow. Default is false.
+    export let storeCoverage = true;
+
 
 ## Example
 

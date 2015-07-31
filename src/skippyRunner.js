@@ -5,9 +5,10 @@ import runnerTemplate from './runnerTemplate';
 import phantomPool from './phantomPool';
 import shard from './shard';
 import testViewer from './testViewer';
+import instrumenter from './instrumenter';
 
 
-function doRun(testFiles) {
+function doRun(testFiles, storeCoverage) {
   return new Promise((resolve, reject) => {
     let scriptFiles = [...config.srcFiles, ...testFiles];
 
@@ -34,9 +35,22 @@ function doRun(testFiles) {
             console.time(`[${processIdx}] retrieve page data`);
           }
 
-          page.evaluate(() => {
-            return { relatedFiles: __relatedFiles__, testResults: __testResults__ };
-          }, (result) => {
+          // no closures allowed in evalFn
+          const evalFn = storeCoverage ? () => {
+            //noinspection JSUnresolvedVariable
+            return {
+              relatedFiles: __relatedFiles__,
+              testResults: __testResults__,
+              coverage: __coverage__
+            };
+          } : () => {
+            return {
+              relatedFiles: __relatedFiles__,
+              testResults: __testResults__
+            };
+          };
+
+          page.evaluate(evalFn, (result) => {
             if (config.debug) {
               console.timeEnd(`[${processIdx}] retrieve page data`);
             }
@@ -60,13 +74,13 @@ function doRun(testFiles) {
   });
 }
 
-function doShardedTestRun(testFiles) {
+function doShardedTestRun(testFiles, storeCoverage) {
   return new Promise((resolve) => {
     console.time('doShardedRun');
     console.log(`Running ${testFiles.length} testFiles`);
 
     let promises = _.collect(shard(testFiles, config.maxProcesses), (testFilesShard) => {
-      return doRun(testFilesShard);
+      return doRun(testFilesShard, storeCoverage);
     });
 
     Promise.all(promises).then((results) => {
@@ -79,6 +93,11 @@ function doShardedTestRun(testFiles) {
       const testResults = _.clone(results[0].testResults);
       testResults.children = _.flatten(_.pluck(_.pluck(results, 'testResults'), 'children'));
 
+      if (storeCoverage) {
+        const coverages = _.pluck(results, 'coverage');
+        instrumenter.writeCombinedCoverage(coverages);
+      }
+
       resolve({ testResults, relatedFiles });
 
     }).catch((error) => {
@@ -89,15 +108,16 @@ function doShardedTestRun(testFiles) {
 }
 
 function getSrcTestRelation() {
-  return doShardedTestRun(config.testFiles).then(({testResults, relatedFiles}) => {
-    console.log(`Found ${relatedFiles.length} sets of related files`);
-    if (config.debug) {
-      console.log(relatedFiles);
-    }
+  return doShardedTestRun(config.testFiles, config.storeCoverage)
+    .then(({testResults, relatedFiles}) => {
+      console.log(`Found ${relatedFiles.length} sets of related files`);
+      if (config.debug) {
+        console.log(relatedFiles);
+      }
 
-    testViewer.showTestResults(testResults);
-    return relatedFiles;
-  });
+      testViewer.showTestResults(testResults);
+      return relatedFiles;
+    });
 }
 
 function runTests(testFiles) {

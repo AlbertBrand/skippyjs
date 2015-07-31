@@ -7,6 +7,7 @@ import config from './config';
 
 
 const instrumenter = new istanbul.Instrumenter();
+const collector = new istanbul.Collector();
 
 function writeInstrumented(filePaths) {
   for (let filePath of filePaths) {
@@ -25,5 +26,18 @@ function writeInstrumented(filePaths) {
   console.log(`Instrumented ${filePaths.length} files`);
 }
 
+function writeCombinedCoverage(coverages) {
+  for (let coverage of coverages) {
+    collector.add(coverage);
+  }
+  const finalCoverage = collector.getFinalCoverage();
+  collector.dispose();
+  var coveragePath = config.coveragePath + 'coverage.json';
+  fs.writeFileSync(coveragePath, JSON.stringify(finalCoverage, null, 2));
+  if (config.debug) {
+    console.log('Written', coveragePath);
+  }
+}
 
-export default { writeInstrumented }
+
+export default { writeInstrumented, writeCombinedCoverage }

@@ -38,6 +38,7 @@ if (!fs.existsSync(configFile)) {
    *  staticFiles,
    *  maxProcesses,
    *  preprocessors,
+   *  storeCoverage,
    *  debug
    * }}
  */
@@ -56,6 +57,7 @@ const testFiles = glob.sync(config.testFiles || []);
 const staticFiles = glob.sync(config.staticFiles || []); // TODO
 const maxProcesses = config.maxProcesses || 8;
 const preprocessors = config.preprocessors || {};
+const storeCoverage = config.storeCoverage || false;
 const debug = config.debug || false;
 
 srcFiles.unshift('instrumentHelper.js');
@@ -84,5 +86,6 @@ export default {
   staticFiles,
   maxProcesses,
   preprocessors,
+  storeCoverage,
   debug
 }
