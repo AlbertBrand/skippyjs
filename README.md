@@ -9,17 +9,18 @@ It features:
 
 ## Installation
 
-  - Install skippyjs:
+Install skippyjs:
 
   
     npm install skippyjs --saveDev
 
 
-  - Create a skippy config file, see skippyConfig.js for an example.
-  - Run skippyJS:
+Create a skippy config file, see skippyConfig.js for an example.
+
+Run skippyJS:
 
 
-    ./node_modules/skippyjs/bin/skippyjs mySkippyConfig.js
+    ./node_modules/.bin/skippyjs mySkippyConfig.js
 
 
 The following options are supported:
