@@ -3,7 +3,14 @@ import _ from 'lodash';
 import config from './config';
 import instrumenter from './instrumenter';
 import runner from './skippyRunner';
+import testViewer from './testViewer';
 
+
+function runAndShowTestResults(testFiles) {
+  runner.runTests(testFiles).then((results) => {
+    testViewer.showTestResults(results.testResults);
+  });
+}
 
 function start(relatedFiles) {
   function getRelatedTestFiles(srcFile) {
@@ -15,29 +22,28 @@ function start(relatedFiles) {
       }
     });
     return relatedTestFiles;
-   }
+  }
 
   function changedFile(file) {
     if (_.includes(config.instrumentFiles, file)) {
       if (config.verbose) {
-        console.log('Instrumented source file changed');
+        console.log('Instrumented source file changed, running related tests');
       }
       instrumenter.writeInstrumented([file]);
-      let relatedTestFiles = getRelatedTestFiles(file);
-      runner.runTests(relatedTestFiles);
+      runAndShowTestResults(getRelatedTestFiles(file));
 
     } else if (_.includes(config.srcFiles, file)) {
       if (config.verbose) {
-        console.log('Non-instrumented source file changed');
+        console.log('Non-instrumented source file changed, running all tests');
       }
-      // TODO decide what to do here
+      runAndShowTestResults(config.testFiles);
 
     } else if (_.includes(config.testFiles, file)) {
       if (config.verbose) {
-        console.log('Test file changed');
+        console.log('Test file changed, running single test');
       }
       instrumenter.writeInstrumented([file]);
-      runner.runTests([file]);
+      runAndShowTestResults([file]);
     }
   }
 

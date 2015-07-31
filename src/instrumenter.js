@@ -32,6 +32,10 @@ function combine(coverages) {
   }
   const combinedCoverage = collector.getFinalCoverage();
   collector.dispose();
+  // TODO remove test coverage in Phantom process
+  for (let testFile of config.testFiles) {
+    delete combinedCoverage[testFile];
+  }
   return combinedCoverage;
 }
 
