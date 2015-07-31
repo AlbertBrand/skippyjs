@@ -163,7 +163,6 @@ Make sure to include the preprocessed files in your src files:
   - console.log output of tests
   - remove dependency on test framework, configure your own
   - js-reporters output
-  - coverage output
   - improve console/file logging
   - warn when src/testFiles are included that do not exist
   - preprocess instrumented files
