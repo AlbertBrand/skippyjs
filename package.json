@@ -29,7 +29,6 @@
     "commander": "2.8.*",
     "di": "0.0.1",
     "es6-template-strings": "1.0.*",
-    "finalhandler": "0.4.*",
     "fs-extra": "0.18.*",
     "glob-all": "3.0.*",
     "istanbul": "0.3.*",
@@ -39,7 +38,7 @@
     "phantom": "0.7.*",
     "phantomjs": "1.9.*",
     "promise-queue": "2.1.*",
-    "serve-static": "1.10.*"
+    "st": "0.5.*"
   },
   "devDependencies": {
     "chai": "*",

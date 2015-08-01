@@ -1,23 +1,31 @@
 import http from 'http';
-import serveStatic from 'serve-static';
-import finalhandler from 'finalhandler';
+import st from 'st';
+import _ from 'lodash';
 import config from './config';
 
 
 let httpServer;
 
 // TODO serve only configured files
-const generatedServe = serveStatic(config.generatedPath);
-const staticServe = serveStatic(config.staticPath);
-const rootServe = serveStatic('.');
+const generatedServe = st({ path: config.generatedPath, url: '/', dot: true, passthrough: true, cache: false });
+const staticServe = st({ path: config.staticPath, url: '/', dot: true, passthrough: true });
+const rootServe = st({ path: '.', url: '/', dot: true, cache: false });
 
 function serve() {
   httpServer = http.createServer((req, res) => {
-    generatedServe(req, res, () => {
-      staticServe(req, res, () => {
-        rootServe(req, res, finalhandler(req, res));
-      });
+    let isHandled;
+    _.find(config.staticFiles, (staticFileConfig) => {
+      const staticFileServe = st(staticFileConfig);
+      isHandled = staticFileServe(req, res);
+      return isHandled;
     });
+    if (!isHandled) {
+      generatedServe(req, res, () => {
+        staticServe(req, res, () => {
+          rootServe(req, res);
+        });
+      });
+    }
   }).listen(config.httpServerPort);
 }
 

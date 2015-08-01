@@ -6,5 +6,19 @@ var My = {
 
   sum: function (a, b) {
     return a + b;
+  },
+
+  data: null,
+
+  fetchResult: function (cb) {
+    var oReq = new XMLHttpRequest();
+    oReq.addEventListener('load', function (data) {
+      My.data = JSON.parse(oReq.responseText);
+      console.log('loaded!');
+      cb();
+    });
+    oReq.open('GET', 'real/app.json', true);
+    oReq.send();
+    return true;
   }
 };

@@ -20,4 +20,15 @@ describe("My", function () {
       expect(My.sum(1, 2)).not.toBe(4);
     });
   });
+
+  describe('async suite', function () {
+    beforeEach(function(done) {
+      My.fetchResult(done);
+    });
+
+    it('should fetch results from JSON', function (done) {
+      expect(My.data.app).toBe(true);
+      done();
+    })
+  });
 });

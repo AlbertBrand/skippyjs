@@ -2,6 +2,7 @@ import phantom from 'phantom';
 import Queue from 'promise-queue';
 import _ from 'lodash';
 import path from 'path';
+import colors from 'colors';
 import config from './config';
 
 
@@ -68,10 +69,12 @@ function openPage(pageUrl, openFn, errorFn) {
           page.set('onLoadFinished', () => {
             openFn(page, finish, processIdx);
           });
-          page.set('onResourceError', (resourceError) => {
-            console.log('Unable to load resource', resourceError.url);
-            //noinspection JSUnresolvedVariable
-            console.log(`Error code: ${resourceError.errorCode}. Description: ${resourceError.errorString}`);
+          page.set('onResourceError', ({errorCode, url, errorString}) => {
+            if (errorCode >= 100) {
+              console.log(colors.yellow(`Warning: [${errorCode}] ${errorString}`));
+            } else {
+              console.log(colors.gray(`Info: [${errorCode}] ${url} ${errorString}`));
+            }
           });
           page.set('onError', (msg) => {
             errorFn({ msg }, processIdx);

@@ -13,6 +13,8 @@ export let testFiles = [
   'src/**/*.spec.js'
 ];
 
-export let staticFiles = [];
+export let staticFiles = [
+  { path: 'virtual', url: '/real' }
+];
 
 export let maxProcesses = 4;

@@ -61,8 +61,11 @@ The skippy config file can be written with ES6 (ES2015) or ES5 syntax, ES6 is pr
       'src/**/*.spec.js'
     ];
     
-    // Unsupported yet.
-    export let staticFiles = [];
+    // Specify static file contents to be served by Skippy's http server. Uses 
+    // https://github.com/isaacs/st as implementation. The 'passthrough' flag is ignored.
+    export let staticFiles = [
+      { path: 'some/path/to/img', url: '/assets/images' }
+    ];
     
     // Override the number of Phantom processes used to run tests. Default is 8. 
     export let maxProcesses = 4;
