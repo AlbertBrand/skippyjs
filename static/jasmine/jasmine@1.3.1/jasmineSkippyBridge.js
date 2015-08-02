@@ -6,7 +6,6 @@ var __testResults__ = {
   children: [],
   status: 'finished'
 };
-var __done__ = false;
 
 function transformSpecToResult(spec) {
   var testResult = {
@@ -63,7 +62,13 @@ jasmine.getEnv().addReporter({
   },
 
   reportRunnerResults: function () {
-    __done__ = true;
+    if (typeof callPhantom === 'function') {
+      callPhantom({
+        relatedFiles: __relatedFiles__,
+        testResults: __testResults__,
+        coverage: __coverage__
+      });
+    }
   },
 
   reportSuiteResults: function (suite) {

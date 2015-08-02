@@ -36,13 +36,13 @@ function boot() {
     });
 }
 
-function openPage(pageUrl, openFn, errorFn) {
+function openPage(pageUrl, resultFn, errorFn) {
   booted.then(() => {
     queue.add(() => {
       return new Promise((resolve) => {
-        let processIdx = _.findIndex(processes, { active: false }),
-          process = processes[processIdx],
-          finished = false;
+        const processIdx = _.findIndex(processes, { active: false }),
+          process = processes[processIdx];
+        let finished = false;
 
         function start() {
           if (config.verbose) {
@@ -66,8 +66,9 @@ function openPage(pageUrl, openFn, errorFn) {
         start();
 
         process.instance.createPage((page) => {
-          page.set('onLoadFinished', () => {
-            openFn(page, finish, processIdx);
+          page.set('onCallback', (result) => {
+            resultFn(result);
+            finish();
           });
           page.set('onResourceError', ({errorCode, url, errorString}) => {
             if (errorCode >= 100) {
@@ -77,7 +78,7 @@ function openPage(pageUrl, openFn, errorFn) {
             }
           });
           page.set('onError', (msg) => {
-            errorFn({ msg }, processIdx);
+            errorFn({ msg });
             finish();
           });
           page.open(pageUrl);

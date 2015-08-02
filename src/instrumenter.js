@@ -41,7 +41,7 @@ function combine(coverages) {
 
 function writeCoverage(coverage) {
   var coveragePath = config.coveragePath + 'coverage.json';
-  fs.writeFileSync(coveragePath, JSON.stringify(coverage, null, 2));
+  fs.writeFileSync(coveragePath, JSON.stringify(coverage));
   if (config.verbose) {
     console.log('Written', coveragePath);
   }

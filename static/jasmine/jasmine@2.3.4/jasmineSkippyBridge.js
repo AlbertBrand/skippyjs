@@ -2,7 +2,6 @@
 
 var __relatedFiles__ = [];
 var __testResults__ = {};
-var __done__ = false;
 
 function isTopSuiteChild(suiteId) {
   var topSuiteChildren = jasmine.getEnv().topSuite().children;
@@ -52,7 +51,13 @@ jasmine.getEnv().addReporter({
 
   jasmineDone: function () {
     __testResults__ = getTestResults(jasmine.getEnv().topSuite());
-    __done__ = true;
+    if (typeof callPhantom === 'function') {
+      callPhantom({
+        relatedFiles: __relatedFiles__,
+        testResults: __testResults__,
+        coverage: __coverage__
+      });
+    }
   },
 
   suiteStarted: function () {
