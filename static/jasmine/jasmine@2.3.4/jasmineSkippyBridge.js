@@ -1,8 +1,5 @@
 // SkippyJS bridge for Jasmine 2.3.4
 
-var __relatedFiles__ = [];
-var __testResults__ = {};
-
 function isTopSuiteChild(suiteId) {
   var topSuiteChildren = jasmine.getEnv().topSuite().children;
   for (var i in topSuiteChildren) {
@@ -44,20 +41,18 @@ function getTestResults(node) {
 
 jasmine.getEnv().addReporter({
   stmtCoverage: null,
+  relatedFiles: [],
 
   jasmineStarted: function () {
     this.stmtCoverage = getStmtCoverage(__coverage__);
   },
 
   jasmineDone: function () {
-    __testResults__ = getTestResults(jasmine.getEnv().topSuite());
-    if (typeof callPhantom === 'function') {
-      callPhantom({
-        relatedFiles: __relatedFiles__,
-        testResults: __testResults__,
-        coverage: __coverage__
-      });
-    }
+    doCallback({
+      relatedFiles: this.relatedFiles,
+      testResults: getTestResults(jasmine.getEnv().topSuite()),
+      coverage: __config__.storeCoverage ? __coverage__ : null
+    });
   },
 
   suiteStarted: function () {
@@ -67,10 +62,10 @@ jasmine.getEnv().addReporter({
     if (!isTopSuiteChild(suiteResult.id)) {
       return;
     }
+
     var lastStmtCoverage = this.stmtCoverage;
     this.stmtCoverage = getStmtCoverage(__coverage__);
-    var relatedFiles = getRelatedFiles(lastStmtCoverage, this.stmtCoverage);
-    __relatedFiles__.push(relatedFiles);
+    this.relatedFiles.push(getRelatedFiles(lastStmtCoverage, this.stmtCoverage));
   },
 
   specStarted: function () {

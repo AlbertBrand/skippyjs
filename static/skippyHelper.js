@@ -19,3 +19,9 @@ function getRelatedFiles(lastStmtCoverage, currStmtCoverage) {
   }
   return related;
 }
+
+function doCallback(result) {
+  if (typeof callPhantom === 'function') {
+    callPhantom(result);
+  }
+}

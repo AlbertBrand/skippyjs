@@ -6,13 +6,18 @@ import config from './config';
 
 let httpServer;
 
-// TODO serve only configured files
 const generatedServe = st({ path: config.generatedPath, url: '/', dot: true, passthrough: true, cache: false });
 const staticServe = st({ path: config.staticPath, url: '/', dot: true, passthrough: true });
+
+// TODO serve only configured files
 const rootServe = st({ path: '.', url: '/', dot: true, cache: false });
 
 function serve() {
   httpServer = http.createServer((req, res) => {
+    if (req.url === '/config.js') {
+      res.end('var __config__ = ' + JSON.stringify(config) + ';');
+      return;
+    }
     let isHandled;
     _.find(config.staticFiles, (staticFileConfig) => {
       const staticFileServe = st(staticFileConfig);

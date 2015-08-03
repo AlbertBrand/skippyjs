@@ -1,12 +1,5 @@
 // SkippyJS bridge for Jasmine 1.3.1
 
-var __relatedFiles__ = [];
-var __testResults__ = {
-  description: 'root',
-  children: [],
-  status: 'finished'
-};
-
 function transformSpecToResult(spec) {
   var testResult = {
     description: spec.description,
@@ -56,19 +49,23 @@ function transformSuiteToResult(suite) {
 
 jasmine.getEnv().addReporter({
   stmtCoverage: null,
+  testResults: {
+    description: 'root',
+    children: [],
+    status: 'finished'
+  },
+  relatedFiles: [],
 
   reportRunnerStarting: function () {
     this.stmtCoverage = getStmtCoverage(__coverage__);
   },
 
   reportRunnerResults: function () {
-    if (typeof callPhantom === 'function') {
-      callPhantom({
-        relatedFiles: __relatedFiles__,
-        testResults: __testResults__,
-        coverage: __coverage__
-      });
-    }
+    doCallback({
+      relatedFiles: this.relatedFiles,
+      testResults: this.testResults,
+      coverage: __config__.storeCoverage ? __coverage__ : null
+    });
   },
 
   reportSuiteResults: function (suite) {
@@ -76,20 +73,16 @@ jasmine.getEnv().addReporter({
       return;
     }
 
-    __testResults__.children.push(transformSuiteToResult(suite));
+    this.testResults.children.push(transformSuiteToResult(suite));
 
     var lastStmtCoverage = this.stmtCoverage;
     this.stmtCoverage = getStmtCoverage(__coverage__);
-    var relatedFiles = getRelatedFiles(lastStmtCoverage, this.stmtCoverage);
-    __relatedFiles__.push(relatedFiles);
+    this.relatedFiles.push(getRelatedFiles(lastStmtCoverage, this.stmtCoverage));
   },
 
   reportSpecStarting: function () {
   },
 
   reportSpecResults: function () {
-  },
-
-  log: function () {
   }
 });

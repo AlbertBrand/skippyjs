@@ -54,7 +54,7 @@ const staticPath = root + 'static/';
 const coveragePath = tmpPath + 'coverage/';
 const generatedPath = tmpPath + 'generated/';
 
-srcFiles.unshift('instrumentHelper.js');
+srcFiles.unshift(...['config.js', 'skippyHelper.js']);
 
 if (testFramework.startsWith('jasmine')) {
   srcFiles.unshift(...[
