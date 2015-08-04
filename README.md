@@ -11,98 +11,99 @@ It features:
 
 Install skippyjs:
 
-  
-    npm install skippyjs --saveDev
-
+```
+npm install skippyjs --saveDev
+```
 
 Create a skippy config file, see skippyConfig.js for an example.
 
 Run skippyJS:
 
-
-    ./node_modules/.bin/skippyjs mySkippyConfig.js
-
+```
+./node_modules/.bin/skippyjs mySkippyConfig.js
+```
 
 The following options are supported:
 
-
+```
     -h, --help            output usage information
     -V, --version         output the version number
     -r, --run-once        only perform one test run, do not watch file changes
     -s, --store-coverage  store coverage JSON after determining related files
     --verbose             verbose output
-
+```
 
 ## Configuration
 
 The skippy config file can be written with ES6 (ES2015) or ES5 syntax, ES6 is preferred.
-  
-    
-    // Select the test framework your project uses. 
-    // Only jasmine@1.3.1 and jasmine@2.3.4 is supported right now.
-    export let testFramework = 'jasmine@2.3.4';
 
-    // Specify which files should be instrumented to determine the relation between src and test. 
-    // Files that normally should not be instrumented are libraries and configuration.
-    // You can use the glob-all syntax. 
-    export let instrumentFiles = [
-      'src/**/*.js',
-      '!src/**/*.spec.js'
-    ];
-    
-    // Specify all the src files that are needed to boot your application. Note that order is
-    // important. You can use the spread operator to combine the instrumented files in this array.
-    export let srcFiles = [
-      ...instrumentFiles
-    ];
-    
-    // Specify the files containing tests. 
-    export let testFiles = [
-      'src/**/*.spec.js'
-    ];
-    
-    // Specify static file contents to be served by Skippy's http server. Uses 
-    // https://github.com/isaacs/st as implementation. The 'passthrough' flag is ignored.
-    export let staticFiles = [
-      { path: 'some/path/to/img', url: '/assets/images' }
-    ];
-    
-    // Override the number of Phantom processes used to run tests. Default is 8. 
-    export let maxProcesses = 4;
+```javascript
+// Select the test framework your project uses. 
+// Only jasmine@1.3.1 and jasmine@2.3.4 is supported right now.
+export let testFramework = 'jasmine@2.3.4';
 
-    // Optionally define preprocessors for your src files. 
-    // See 'Preprocessor setup' for more details.
-    export let preprocessors = {};
-    
-    // Override the temp path for storing processed files and coverage. Defaults to
-    // <app root>/node_modules/skippyjs/.tmp
-    export let tmpPath = '.tmp/';
+// Specify which files should be instrumented to determine the relation between src and test. 
+// Files that normally should not be instrumented are libraries and configuration.
+// You can use the glob-all syntax. 
+export let instrumentFiles = [
+  'src/**/*.js',
+  '!src/**/*.spec.js'
+];
 
-    // Override the port for the HTTP server that hosts files for Phantom. Defaults to 3000.
-    export let httpServerPort = 3001;
+// Specify all the src files that are needed to boot your application. Note that order is
+// important. You can use the spread operator to combine the instrumented files in this array.
+export let srcFiles = [
+  ...instrumentFiles
+];
 
-    // Only perform one test run. Exists with status code 1 if any test failed. Can also be
-    // set with --run-once flag. Defaults to false.
-    export let runOnce = true;
+// Specify the files containing tests. 
+export let testFiles = [
+  'src/**/*.spec.js'
+];
 
-    // Store the JS coverage after related files have been determined. It causes a 
-    // slight perf hit as retrieving it from Phantom is slow. Can also be set with 
-    // --store-coverage flag. Default is false.
-    export let storeCoverage = true;
+// Specify static file contents to be served by Skippy's http server. Uses 
+// https://github.com/isaacs/st as implementation. The 'passthrough' flag is ignored.
+export let staticFiles = [
+  { path: 'some/path/to/img', url: '/assets/images' }
+];
 
-    // Enable more verbose output. Turning it on may cause some degraded perf. Can also be
-    // set with --verbose flag. Default is false.
-    export let verbose = true;
+// Override the number of Phantom processes used to run tests. Default is 8. 
+export let maxProcesses = 4;
 
+// Optionally define preprocessors for your src files. 
+// See 'Preprocessor setup' for more details.
+export let preprocessors = {};
+
+// Override the temp path for storing processed files and coverage. Defaults to
+// <app root>/node_modules/skippyjs/.tmp
+export let tmpPath = '.tmp/';
+
+// Override the port for the HTTP server that hosts files for Phantom. Defaults to 3000.
+export let httpServerPort = 3001;
+
+// Only perform one test run. Exists with status code 1 if any test failed. Can also be
+// set with --run-once flag. Defaults to false.
+export let runOnce = true;
+
+// Store the JS coverage after related files have been determined. It causes a 
+// slight perf hit as retrieving it from Phantom is slow. Can also be set with 
+// --store-coverage flag. Default is false.
+export let storeCoverage = true;
+
+// Enable more verbose output. Turning it on may cause some degraded perf. Can also be
+// set with --verbose flag. Default is false.
+export let verbose = true;
+```
 
 ## Example
 
-  - Go to ./example
-  - Run skippyJS:
-  
- 
-    ../bin/skippyjs skippyConfig.js
+Go to ./example
 
+Run skippyJS:
+  
+```
+../bin/skippyjs skippyConfig.js
+```
 
 ## Implementation details
 
@@ -138,40 +139,43 @@ There are many cases where this relation between tests does not hold. But in pra
 
 First install your favorite Karma preprocessor using npm, for instance:
 
-    npm install --save karma-coffee-preprocessor
-    
+```
+npm install --save karma-coffee-preprocessor
+```
+
 Then, setup the preprocessor in your config:
 
-    // ... other exports
+```javascript
+// ... other exports
 
-    import ngHtml2jsPreprocessor from 'karma-ng-html2js-preprocessor';
-    import coffeePreprocessor from 'karma-coffee-preprocessor';
+import ngHtml2jsPreprocessor from 'karma-ng-html2js-preprocessor';
+import coffeePreprocessor from 'karma-coffee-preprocessor';
 
-    export let preprocessors = {
-      '**/*.html': ngHtml2jsPreprocessor, // shorthand, pick first preprocessor from imported object
-      '**/*.coffee': { // full syntax
-        name: 'coffee', // optional alternative preprocessor name from imported object
-        preprocessor: coffeePreprocessor,
-        config: {
-          // optional configuration normally specified in karma config
-          coffeePreprocessor: {
-            // example, see preprocessor docs for details
-            transformPath: (path) => { return path; }
-          }
-        }
+export let preprocessors = {
+  '**/*.html': ngHtml2jsPreprocessor, // shorthand, pick first preprocessor from imported object
+  '**/*.coffee': { // full syntax
+    name: 'coffee', // optional alternative preprocessor name from imported object
+    preprocessor: coffeePreprocessor,
+    config: {
+      // optional configuration normally specified in karma config
+      coffeePreprocessor: {
+        // example, see preprocessor docs for details
+        transformPath: (path) => { return path; }
       }
-    };
-
+    }
+  }
+};
+```
     
 Make sure to include the preprocessed files in your src files:
 
-
-    export srcFiles = [
-      '**/*.html',
-      '**/*.coffee',
-      // ... etc
-    ];
-
+```javascript
+export srcFiles = [
+  '**/*.html',
+  '**/*.coffee',
+  // ... etc
+];
+```
 
 ## TODO
 
