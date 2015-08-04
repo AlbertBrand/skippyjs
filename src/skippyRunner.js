@@ -22,7 +22,7 @@ function doRun(testFiles) {
 function runTests(testFiles, storeCoverage) {
   return new Promise((resolve) => {
     console.time('runTests');
-    console.log(`Running ${testFiles.length} testFiles`);
+    console.log(`Running ${testFiles.length} test files`);
 
     let promises = _.collect(shard(testFiles, config.maxProcesses), (testFilesShard) => {
       return doRun(testFilesShard);

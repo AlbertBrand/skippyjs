@@ -1,3 +1,4 @@
+import colors from 'colors';
 import config from './config'; // make sure config is imported first
 import bootstrap from './bootstrap';
 import instrumenter from './instrumenter';
@@ -9,6 +10,8 @@ import karmaPreprocessor from './karmaPreprocessor'
 import testViewer from './testViewer'
 import testHelper from './testHelper'
 
+
+console.log(colors.bgGreen.black('SkippyJS, the faster test runner'));
 
 console.time('SkippyJS ready in');
 
